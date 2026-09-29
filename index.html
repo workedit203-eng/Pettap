@@ -19,7 +19,7 @@
       overflow: hidden;
     }
     
-    .page { display: none; padding: 20px; flex-direction: column; align-items: center; height: 100%; overflow-y: auto; padding-bottom: 80px; }
+    .page { display: none; padding: 20px; flex-direction: column; align-items: center; height: 100%; overflow-y: auto; padding-bottom: 90px; }
     .page.active { display: flex; }
 
     /* Тапалка */
@@ -46,7 +46,7 @@
     /* Нижнє Меню */
     .nav-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
-      display: flex; justify-content: space-around; background: #151522; padding: 10px 0;
+      display: flex; justify-content: space-around; background: #151522; padding: 12px 0;
       border-top: 1px solid #2a2a40; width: 100%; z-index: 100;
     }
     .nav-item { color: #8e8e93; font-size: 11px; border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -91,7 +91,7 @@
         <button class="btn-action btn-sub" onclick="openChannelCase()">Забрати</button>
       </div>
 
-      <!-- Кейс за Сир (Зірки випадають важко) -->
+      <!-- Кейс за Сир -->
       <div class="card">
         <div class="card-info">
           <div class="card-icon">🧀</div>
@@ -109,7 +109,7 @@
         <button class="btn-action btn-stars" onclick="buyStarsCase(10)">10 ⭐</button>
       </div>
 
-      <!-- Платний VIP Кейс -->
+      <!-- VIP Кейс -->
       <div class="card">
         <div class="card-info">
           <div class="card-icon">🎁</div>
@@ -123,7 +123,7 @@
   <!-- 3. МАГАЗИН ПОДАРУНКІВ ЗА ЗІРКИ -->
   <div id="page-gifts" class="page">
     <h2>🎁 Магазин Подарунків</h2>
-    <p style="color: #aaa; font-size: 13px; text-align: center;">Назбирати 15 ⭐ важко, але воно того варте!</p>
+    <p style="color: #aaa; font-size: 13px; text-align: center;">Збирай ⭐ та обмінюй на реальні призи!</p>
 
     <div class="grid-list">
       <div class="card">
@@ -168,8 +168,8 @@
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    const tg = window.Telegram?.WebApp;
+    if (tg) tg.expand();
 
     let score = parseInt(localStorage.getItem('petTapScore')) || 0;
     let stars = parseInt(localStorage.getItem('petTapStars')) || 0;
@@ -196,37 +196,53 @@
       energy -= 1;
       saveData();
       updateUI();
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     });
 
-    // 1. Кейс за Сир (100🧀)
+    // Сповіщення
+    function showAlert(msg) {
+      if (tg && tg.showAlert) {
+        tg.showAlert(msg);
+      } else {
+        alert(msg);
+      }
+    }
+
+    // 1. Кейс за Сир
     function openCheeseCase() {
-      if (score < 100) { tg.showAlert("Потрібно 100 🧀 сиру!"); return; }
+      if (score < 100) { showAlert("Потрібно 100 🧀 сиру!"); return; }
       score -= 100;
       
-      // Шанси: 70% = +20 сиру, 25% = 1 Star, 5% = 2 Stars
       let rand = Math.random() * 100;
       if (rand < 70) {
         score += 20;
-        tg.showAlert("Ви виграли: 20 🧀 сиру!");
+        showAlert("Ви виграли: 20 🧀 сиру!");
       } else if (rand < 95) {
         stars += 1;
-        tg.showAlert("🎉 УРА! Ви виграли 1 ⭐ Зірку!");
+        showAlert("🎉 УРА! Ви виграли 1 ⭐ Зірку!");
       } else {
         stars += 2;
-        tg.showAlert("🔥 СУПЕР ДЖЕКПОТ! Ви виграли 2 ⭐ Зірки!");
+        showAlert("🔥 СУПЕР ДЖЕКПОТ! Ви виграли 2 ⭐ Зірки!");
       }
       saveData();
       updateUI();
     }
 
-    // 2. Кейс за підписку
+    // 2. Кейс за підписку на t.me/pettap
     function openChannelCase() {
-      if (isSubscribed) { tg.showAlert("Ви вже забрали цей кейс!"); return; }
+      if (isSubscribed) { 
+        showAlert("Ви вже забрали цей кейс!"); 
+        return; 
+      }
       
-      // Відкриваємо канал (заміни посилання на свій канал)
-      tg.openTelegramLink("https://t.me/your_channel_name");
-      
+      // Переходимо на канал Pettap
+      if (tg && tg.openTelegramLink) {
+        tg.openTelegramLink("https://t.me/pettap");
+      } else {
+        window.open("https://t.me/pettap", "_blank");
+      }
+
+      // Нараховуємо нагороду
       setTimeout(() => {
         isSubscribed = true;
         stars += 2;
@@ -234,42 +250,42 @@
         localStorage.setItem('petSubscribed', 'true');
         saveData();
         updateUI();
-        tg.showAlert("Дякуємо за підписку! Нагорода: +2 ⭐ та 150 🧀!");
-      }, 3000);
+        showAlert("🎉 Дякуємо за підписку! Нагорода: +2 ⭐ та 150 🧀!");
+      }, 2500);
     }
 
     // 3. Платні Кейси
     function buyStarsCase(cost) {
-      tg.sendData(JSON.stringify({ action: "buy_case", type: "stars_case", cost: cost }));
+      if (tg) tg.sendData(JSON.stringify({ action: "buy_case", type: "stars_case", cost: cost }));
     }
 
     function buyDonateCase() {
-      tg.sendData(JSON.stringify({ action: "buy_case", type: "donate_case" }));
+      if (tg) tg.sendData(JSON.stringify({ action: "buy_case", type: "donate_case" }));
     }
 
     // 4. Покупка Подарунків
     function buyGift(giftName, cost) {
       if (stars < cost) {
-        tg.showAlert(`Недостатньо Зірок! Потрібно ${cost} ⭐. Відкривай кейси та збирай більше!`);
+        showAlert(`Недостатньо Зірок! Потрібно ${cost} ⭐. Відкривай кейси та збирай більше!`);
         return;
       }
       stars -= cost;
       saveData();
       updateUI();
-      tg.sendData(JSON.stringify({ action: "claim_gift", gift: giftName }));
-      tg.showAlert(`🎉 ВІТАЄМО! Ви успішно обміняли ${cost} ⭐ на ${giftName}! Бот надішле його вам у чат.`);
+      if (tg) tg.sendData(JSON.stringify({ action: "claim_gift", gift: giftName }));
+      showAlert(`🎉 ВІТАЄМО! Ви успішно обміняли ${cost} ⭐ на ${giftName}! Бот надішле його вам у чат.`);
     }
 
     // Покупка Пета
     function buyPet(emoji, power, cost) {
-      if (score < cost) { tg.showAlert("Недостатньо сиру 🧀!"); return; }
+      if (score < cost) { showAlert("Недостатньо сиру 🧀!"); return; }
       score -= cost;
       tapPower = power;
       currentEmoji = emoji;
       mouseEmoji.innerText = emoji;
       saveData();
       updateUI();
-      tg.showAlert(`Успіх! Новий пет: ${emoji}`);
+      showAlert(`Успіх! Новий пет: ${emoji}`);
     }
 
     function saveData() {
