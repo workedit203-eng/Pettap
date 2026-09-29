@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>PetTap Game & Profile</title>
+  <title>PetTap Game</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { box-sizing: border-box; user-select: none; }
@@ -13,18 +13,17 @@
       color: #fff;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
+      display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;
     }
     
     .page { display: none; padding: 20px; flex-direction: column; align-items: center; height: 100%; overflow-y: auto; padding-bottom: 90px; }
     .page.active { display: flex; }
 
+    /* Шапка балансу */
+    .header { text-align: center; margin-top: 5px; }
+    .score-container { font-size: 24px; font-weight: bold; color: #ffcc00; display: flex; gap: 15px; justify-content: center; }
+    
     /* Тапалка */
-    .header { text-align: center; margin-top: 10px; }
-    .score-container { font-size: 26px; font-weight: bold; color: #ffcc00; display: flex; gap: 15px; justify-content: center; }
     .mouse-area { margin: auto 0; cursor: pointer; }
     .mouse-btn { font-size: 110px; transition: transform 0.08s; }
     .mouse-btn:active { transform: scale(0.88); }
@@ -33,23 +32,46 @@
     .energy-bar-bg { background: #33334d; border-radius: 12px; height: 14px; width: 100%; overflow: hidden; }
     .energy-bar-fill { background: linear-gradient(90deg, #ff9900, #ffcc00); height: 100%; width: 100%; }
 
-    /* Карточки */
-    .grid-list { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
-    .card { background: #2a2a40; border-radius: 14px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+    /* Рулетка / Спінер */
+    .roulette-wrapper {
+      width: 100%; max-width: 340px; height: 110px; background: #151522;
+      border: 3px solid #ffcc00; border-radius: 16px; margin: 15px 0;
+      position: relative; overflow: hidden; display: flex; align-items: center;
+    }
+    .roulette-pointer {
+      position: absolute; top: 0; bottom: 0; left: 50%; width: 4px;
+      background: #ff0055; z-index: 10; transform: translateX(-50%);
+      box-shadow: 0 0 10px #ff0055;
+    }
+    .roulette-track {
+      display: flex; gap: 10px; position: absolute; left: 0;
+      transition: transform 3.5s cubic-bezier(0.15, 0.9, 0.25, 1);
+    }
+    .roulette-item {
+      min-width: 80px; height: 80px; background: #2a2a40; border-radius: 12px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      font-weight: bold; font-size: 13px; border: 1px solid #3a3a55; text-align: center;
+    }
+
+    /* Картки */
+    .grid-list { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
+    .card { background: #2a2a40; border-radius: 14px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
     .card-info { display: flex; align-items: center; gap: 12px; }
-    .card-icon { font-size: 32px; }
+    .card-icon { font-size: 30px; }
+    
+    /* Кнопки та полів вводу */
     .btn-action { background: #007aff; border: none; color: white; padding: 10px 14px; font-weight: bold; border-radius: 10px; cursor: pointer; }
     .btn-action:active { opacity: 0.8; }
     .btn-stars { background: linear-gradient(90deg, #ffcc00, #ff9900); color: #000; }
-    .btn-sub { background: linear-gradient(90deg, #00c6ff, #007aff); }
+    .btn-disabled { background: #555 !important; color: #aaa !important; cursor: not-allowed; }
+    .input-field { background: #151522; border: 1px solid #3a3a55; color: #fff; padding: 8px; border-radius: 8px; width: 80px; text-align: center; }
 
-    /* Поля вводу */
-    input {
-      width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #3a3a55;
-      background: #151522; color: #fff; margin-bottom: 10px; outline: none;
-    }
+    /* Таблиці */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+    th, td { padding: 8px; text-align: left; border-bottom: 1px solid #3a3a55; }
+    th { background: #151522; color: #ffcc00; }
 
-    /* Нижнє Меню */
+    /* Меню */
     .nav-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
       display: flex; justify-content: space-around; background: #151522; padding: 10px 0;
@@ -58,20 +80,22 @@
     .nav-item { color: #8e8e93; font-size: 10px; border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .nav-item.active { color: #007aff; font-weight: bold; }
     .nav-icon { font-size: 18px; }
+    .admin-nav { display: none; color: #ffcc00; }
   </style>
 </head>
 <body>
 
+  <!-- Баланс -->
+  <div class="header">
+    <div class="score-container">
+      <span>🧀 <span id="score">0</span></span>
+      <span>⭐ <span id="starsScore">0</span></span>
+    </div>
+  </div>
+
   <!-- 1. ТАПАЛКА -->
   <div id="page-tap" class="page active">
-    <div class="header">
-      <h1>🐭 PetTap</h1>
-      <div class="score-container">
-        <span>🧀 <span id="score">0</span></span>
-        <span>⭐ <span id="starsScore">0</span></span>
-      </div>
-    </div>
-
+    <h2>🐭 Ваш Улюбленець</h2>
     <div class="mouse-area" id="tapArea">
       <div class="mouse-btn" id="mouseEmoji">🐭</div>
     </div>
@@ -82,55 +106,138 @@
     </div>
   </div>
 
-  <!-- 2. КЕЙСИ -->
-  <div id="page-cases" class="page">
-    <h2>📦 Рулетка Кейсів</h2>
+  <!-- 2. ЗАВДАННЯ -->
+  <div id="page-tasks" class="page">
+    <h2>📋 Завдання</h2>
     <div class="grid-list">
-      <div class="card" style="border: 1px solid #00c6ff;">
+      <div class="card">
         <div class="card-info">
           <div class="card-icon">📢</div>
-          <div><b>Кейс Каналу</b><br><small>Підпишись на @pettap</small></div>
+          <div><b>Підпишись на ТГ Канал</b><br><small>Нагорода: +1 ⭐</small></div>
         </div>
-        <button class="btn-action btn-sub" onclick="openChannelCase()">Перейти</button>
+        <button class="btn-action btn-stars" id="btnTaskTg" onclick="completeTgTask()">Виконати</button>
       </div>
 
       <div class="card">
         <div class="card-info">
-          <div class="card-icon">🧀</div>
-          <div><b>Сирний Кейс</b><br><small>Шанс ⭐ Зірок</small></div>
+          <div class="card-icon">👥</div>
+          <div><b>Запроси 5 друзів</b><br><small>Прогрес: <span id="refCount">0</span>/5 | Нагорода: +1 ⭐</small></div>
         </div>
-        <button class="btn-action" onclick="openCheeseCase()">100 🧀</button>
+        <button class="btn-action btn-stars" onclick="inviteFriends()">Запросити</button>
       </div>
     </div>
   </div>
 
-  <!-- 3. ПРОФІЛЬ ТА ВИВЕДЕННЯ (НОВИЙ РОЗДІЛ) -->
+  <!-- 3. КАЗИНО ТА АПГРЕЙДЕР -->
+  <div id="page-cases" class="page">
+    <h2>🎰 Казино & Апгрейдер</h2>
+
+    <div class="roulette-wrapper">
+      <div class="roulette-pointer"></div>
+      <div class="roulette-track" id="rouletteTrack"></div>
+    </div>
+
+    <div class="grid-list">
+      
+      <!--⚡ НОВИЙ АПГРЕЙДЕР 0.1% -->
+      <div class="card" style="border: 2px solid #00ffcc; flex-direction: column; gap: 10px; align-items: stretch;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="card-info">
+            <div class="card-icon">⚡</div>
+            <div><b>Апгрейдер Зірок</b><br><small>Шанс виграшу: <b style="color:#00ffcc;">99.9%</b></small></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center;">
+          <input type="number" id="upgraderAmount" class="input-field" value="10" min="1" placeholder="Ставка ⭐">
+          <select id="upgraderMulti" class="input-field" style="width: 100px;">
+            <option value="2">x2 Приз</option>
+            <option value="5">x5 Приз</option>
+            <option value="10">x10 Приз</option>
+          </select>
+          <button class="btn-action btn-stars" onclick="runUpgrader()">Апгрейд!</button>
+        </div>
+      </div>
+
+      <!-- Спінер з ведмедиком -->
+      <div class="card" style="border: 1px solid #ff0055;">
+        <div class="card-info">
+          <div class="card-icon">🧸</div>
+          <div><b>Спінер "Супер Ведмедик"</b><br><small>Шанс на 🧸 Медведя! Ціна: 5 ⭐</small></div>
+        </div>
+        <button class="btn-action btn-stars" onclick="spinBearSpinner()">5 ⭐</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4. РИНОК ТА РЕАЛЬНІ ПОДАРУНКИ -->
+  <div id="page-market" class="page">
+    <h2>🛒 Ринок та Подарунки</h2>
+    <div class="grid-list">
+      
+      <!-- 🎁 РЕАЛЬНИЙ ПОДАРУНОК ТЕЛЕГРАМ -->
+      <div class="card" style="border: 2px solid #ff0055; background: linear-gradient(135deg, #2b1a29, #3a1c38);">
+        <div class="card-info">
+          <div class="card-icon">🎁</div>
+          <div><b>Надіслати РЕАЛЬНИЙ Подарунок Адміну</b><br><small>Надіслати 100 ⭐ або 🧸 Медведя у Telegram!</small></div>
+        </div>
+        <button class="btn-action btn-stars" onclick="sendRealTelegramGift()">🎁 Подарувати</button>
+      </div>
+
+      <!-- Продаж улюбленця -->
+      <div class="card" style="border: 1px solid #ffcc00;">
+        <div class="card-info">
+          <div class="card-icon" id="marketPetIcon">🐭</div>
+          <div><b>Продати Улюбленця</b><br><small>Швидкий викуп: 100 ⭐!</small></div>
+        </div>
+        <button class="btn-action btn-stars" id="btnSellPet" onclick="sellPet()">100 ⭐</button>
+      </div>
+
+      <!-- Купівля улюбленця назад (101 Зірка) -->
+      <div class="card" id="buyPetCard" style="display: none; border: 1px solid #28a745;">
+        <div class="card-info">
+          <div class="card-icon">🐭</div>
+          <div><b>Купити Улюбленця</b><br><small>Розблокує виведення: 101 ⭐</small></div>
+        </div>
+        <button class="btn-action btn-stars" onclick="buyPetBack()">101 ⭐</button>
+      </div>
+
+      <!-- Виведення зірок -->
+      <div class="card" style="border: 1px solid #007aff; background: #1f2a44;">
+        <div class="card-info">
+          <div class="card-icon">💎</div>
+          <div><b>Виведення ⭐ Stars</b><br><small>Мін. виведення: 15 ⭐</small></div>
+        </div>
+        <button class="btn-action btn-stars" onclick="withdrawStars()">Вивести</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 5. ПРОФІЛЬ -->
   <div id="page-profile" class="page">
-    <h2>👤 Ваш Профіль</h2>
+    <h2>👤 Профіль Гравця</h2>
     <div class="grid-list">
       <div class="card" style="flex-direction: column; align-items: flex-start; gap: 8px;">
-        <div><b>Користувач:</b> <span id="username">Гровець</span></div>
+        <div><b>Користувач:</b> <span id="username">Гравець</span></div>
         <div><b>Telegram ID:</b> <code id="userId">12345678</code></div>
-        <div><b>Баланс ⭐ Stars:</b> <b id="profileStars">0</b></div>
-        <div><b>Баланс 🧀 Сиру:</b> <b id="profileCheese">0</b></div>
-      </div>
-
-      <h3 style="margin-top: 15px; margin-bottom: 5px;">💸 Виведення ⭐ Stars</h3>
-      <div class="card" style="flex-direction: column; width: 100%;">
-        <input type="number" id="withdrawAmount" placeholder="Кількість Stars (мін. 15)" min="15">
-        <input type="text" id="withdrawAddress" placeholder="Ваш Telegram Username або Гаманець">
-        <button class="btn-action btn-stars" style="width: 100%; margin-top: 5px;" onclick="requestWithdrawal()">Запросити виведення</button>
+        <div><b>Статус:</b> <span id="adminStatus" style="color:#aaa;">Гравець</span></div>
+        <div><b>Мої Інвентар:</b> <span id="myGifts">Немає</span></div>
       </div>
     </div>
   </div>
 
-  <!-- 4. РИНОК -->
-  <div id="page-shop" class="page">
-    <h2>🐭 Ринок мишей</h2>
+  <!-- 6. СЕКРЕТНА АДМІН-ПАНЕЛЬ -->
+  <div id="page-admin" class="page">
+    <h2 style="color: #ffcc00;">👑 Панель Управління Адміна</h2>
     <div class="grid-list">
-      <div class="card">
-        <div class="card-info"><div class="card-icon">🐹</div><div><b>Хом'як</b><br><small>+2 за тап</small></div></div>
-        <button class="btn-action" onclick="buyPet('🐹', 2, 50)">50 🧀</button>
+      <div class="card" style="flex-direction: column; gap: 10px; align-items: stretch;">
+        <b>⚡ Накрутка Балансу (Собі)</b>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-action btn-stars" onclick="adminAddStars(100)">+100 ⭐</button>
+          <button class="btn-action btn-stars" onclick="adminAddStars(1000)">+1000 ⭐</button>
+          <button class="btn-action" onclick="adminAddCheese(50000)">+50k 🧀</button>
+        </div>
       </div>
     </div>
   </div>
@@ -138,152 +245,155 @@
   <!-- НИЖНЄ МЕНЮ -->
   <div class="nav-bar">
     <button class="nav-item active" onclick="switchPage('tap', this)"><span class="nav-icon">🎮</span>Гра</button>
-    <button class="nav-item" onclick="switchPage('cases', this)"><span class="nav-icon">📦</span>Кейси</button>
+    <button class="nav-item" onclick="switchPage('tasks', this)"><span class="nav-icon">📋</span>Завдання</button>
+    <button class="nav-item" onclick="switchPage('cases', this)"><span class="nav-icon">🎰</span>Казино</button>
+    <button class="nav-item" onclick="switchPage('market', this)"><span class="nav-icon">🛒</span>Ринок</button>
     <button class="nav-item" onclick="switchPage('profile', this)"><span class="nav-icon">👤</span>Профіль</button>
-    <button class="nav-item" onclick="switchPage('shop', this)"><span class="nav-icon">🐭</span>Ринок</button>
+    <button class="nav-item admin-nav" id="adminNavBtn" onclick="switchPage('admin', this)"><span class="nav-icon">👑</span>Адмінка</button>
   </div>
 
   <script>
     const tg = window.Telegram?.WebApp;
     if (tg) tg.expand();
 
-    // Отримання даних користувача з Telegram WebApp
     const user = tg?.initDataUnsafe?.user;
-    const userId = user?.id || "Невизначено";
-    const username = user?.username ? `@${user.username}` : (user?.first_name || "Гравець");
+    const currentUserId = user?.id || 0;
 
-    document.getElementById('userId').innerText = userId;
-    document.getElementById('username').innerText = username;
+    // ВАШ TELEGRAM ID
+    const ADMIN_ID = 7860226388; 
+    const isAdmin = (currentUserId === ADMIN_ID);
+
+    document.getElementById('userId').innerText = currentUserId || "Дебютний ID";
+    const userTag = user?.username ? `@${user.username}` : (user?.first_name || "Гравець");
+    document.getElementById('username').innerText = userTag;
+    
+    if (isAdmin) {
+      document.getElementById('adminStatus').innerText = "👑 Головний Адміністратор";
+      document.getElementById('adminStatus').style.color = "#ffcc00";
+      document.getElementById('adminNavBtn').style.display = "flex";
+    }
 
     let score = parseInt(localStorage.getItem('petTapScore')) || 0;
     let stars = parseInt(localStorage.getItem('petTapStars')) || 0;
     let energy = parseInt(localStorage.getItem('petTapEnergy')) || 100;
-    let tapPower = parseInt(localStorage.getItem('petTapPower')) || 1;
-    let currentEmoji = localStorage.getItem('petEmoji') || '🐭';
-    const maxEnergy = 100;
+    let refCount = parseInt(localStorage.getItem('petTapListRefs')) || 0;
+    let gifts = JSON.parse(localStorage.getItem('petTapGifts') || "[]");
+    let hasPet = localStorage.getItem('petTapHasPet') !== 'false';
 
     const scoreEl = document.getElementById('score');
     const starsEl = document.getElementById('starsScore');
     const energyEl = document.getElementById('energy');
     const energyFill = document.getElementById('energyFill');
-    const tapArea = document.getElementById('tapArea');
-    const mouseEmoji = document.getElementById('mouseEmoji');
 
-    mouseEmoji.innerText = currentEmoji;
-    updateUI();
-
-    // Тап
-    tapArea.addEventListener('click', () => {
-      if (energy <= 0) return;
-      score += tapPower;
-      energy -= 1;
-      saveData();
-      updateUI();
-      if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-    });
-
-    function showAlert(msg) {
-      if (tg && tg.showAlert) tg.showAlert(msg);
-      else alert(msg);
-    }
-
-    // Перехід на канал
-    function openChannelCase() {
-      if (tg && tg.openTelegramLink) {
-        tg.openTelegramLink("https://t.me/pettap");
-      } else {
-        window.open("https://t.me/pettap", "_blank");
+    // 🎁 РЕАЛЬНИЙ ПОДАРУНОК ТЕЛЕГРАМ
+    function sendRealTelegramGift() {
+      if (confirm("Надіслати реальний подарунок Адміну через Telegram Stars / Gifts?")) {
+        if (tg && tg.openTelegramLink) {
+          // Відкриває профіль Адміна для відправки реального подарунка через інтерфейс Telegram
+          tg.openTelegramLink(`https://t.me/id7860226388`);
+        } else {
+          window.open("https://t.me/id7860226388", "_blank");
+        }
       }
     }
 
-    // Сирний кейс
-    function openCheeseCase() {
-      if (score < 100) { showAlert("Потрібно 100 🧀 сиру!"); return; }
-      score -= 100;
-      let rand = Math.random() * 100;
-      if (rand < 70) {
-        score += 20;
-        showAlert("Ви виграли: 20 🧀 сиру!");
-      } else {
-        stars += 1;
-        showAlert("🎉 Ви виграли 1 ⭐ Зірку!");
-      }
-      saveData();
-      updateUI();
-    }
+    // ⚡ АПГРЕЙДЕР З ШАНСОМ 0.1%
+    function runUpgrader() {
+      const amount = parseInt(document.getElementById('upgraderAmount').value) || 0;
+      const multi = parseInt(document.getElementById('upgraderMulti').value) || 2;
 
-    // Запит на виведення
-    function requestWithdrawal() {
-      const amount = parseInt(document.getElementById('withdrawAmount').value);
-      const address = document.getElementById('withdrawAddress').value;
-
-      if (!amount || amount < 15) {
-        showAlert("Мінімальна сума виведення: 15 ⭐");
-        return;
-      }
-      if (stars < amount) {
-        showAlert("Недостатньо Зірок на балансі!");
-        return;
-      }
-      if (!address) {
-        showAlert("Введіть реквізити для виведення!");
-        return;
+      if (amount <= 0 || stars < amount) {
+        return alert("❌ Недостатньо ⭐ Stars для цієї ставки!");
       }
 
       stars -= amount;
       saveData();
       updateUI();
 
-      // Відправка даних боту
-      if (tg) {
-        tg.sendData(JSON.stringify({
-          action: "withdraw",
-          userId: userId,
-          amount: amount,
-          address: address
-        }));
-      }
+      // Шанс виграшу: Для адміна = 100%, для інших = 0.1% (Math.random() < 0.001)
+      const isWin = isAdmin ? true : (Math.random() < 0.001);
 
-      showAlert(`Заявку на виведення ${amount} ⭐ прийнято! Адмін зв'яжеться з вами.`);
+      setTimeout(() => {
+        if (isWin) {
+          const prize = amount * multi;
+          stars += prize;
+          alert(`🎉 НЕЙМОВІРНО! Ви виграли ${prize} ⭐ Stars!`);
+        } else {
+          alert(`💔 Стрілка не докрутилася! Ви втратили ${amount} ⭐ Stars.`);
+        }
+        saveData();
+        updateUI();
+      }, 1000);
     }
 
-    // Купівля петів
-    function buyPet(emoji, power, cost) {
-      if (score < cost) { showAlert("Недостатньо сиру 🧀!"); return; }
-      score -= cost;
-      tapPower = power;
-      currentEmoji = emoji;
-      mouseEmoji.innerText = emoji;
+    // Продаж та викуп пета
+    function sellPet() {
+      if (!hasPet) return alert("У вас немає улюбленця!");
+      if (confirm("Продати улюбленця за 100 ⭐ Stars?")) {
+        hasPet = false;
+        stars += 100;
+        localStorage.setItem('petTapHasPet', 'false');
+        saveData();
+        updateUI();
+        alert("💰 Улюбленця продано за 100 ⭐!");
+      }
+    }
+
+    function buyPetBack() {
+      if (stars < 101) return alert("Потрібно 101 ⭐ щоб купити улюбленця назад!");
+      stars -= 101;
+      hasPet = true;
+      localStorage.setItem('petTapHasPet', 'true');
       saveData();
       updateUI();
-      showAlert(`Успіх! Новий пет: ${emoji}`);
+      alert("🎉 Ви купили улюбленця назад!");
     }
+
+    function withdrawStars() {
+      if (stars < 15) return alert("Мінімальна сума — 15 ⭐ Stars!");
+      if (!hasPet) return alert("⚠️ Помилка #404: Для виведення потрібен активний улюбленець (101 ⭐)!");
+      alert(`✅ Заявку на виведення ${stars} ⭐ прийнято!`);
+    }
+
+    // Тапалка
+    document.getElementById('tapArea').addEventListener('click', () => {
+      if (!hasPet) return alert("Придбайте улюбленця на ринку!");
+      if (energy <= 0) return;
+      score += 1;
+      energy -= 1;
+      saveData();
+      updateUI();
+    });
+
+    function adminAddStars(amt) { stars += amt; saveData(); updateUI(); }
+    function adminAddCheese(amt) { score += amt; saveData(); updateUI(); }
 
     function saveData() {
       localStorage.setItem('petTapScore', score);
       localStorage.setItem('petTapStars', stars);
       localStorage.setItem('petTapEnergy', energy);
-      localStorage.setItem('petTapPower', tapPower);
-      localStorage.setItem('petEmoji', currentEmoji);
+      localStorage.setItem('petTapGifts', JSON.stringify(gifts));
     }
 
     function updateUI() {
       scoreEl.innerText = score;
       starsEl.innerText = stars;
       energyEl.innerText = energy;
-      energyFill.style.width = `${(energy / maxEnergy) * 100}%`;
+      energyFill.style.width = `${(energy / 100) * 100}%`;
+      document.getElementById('myGifts').innerText = gifts.length > 0 ? gifts.join(', ') : 'Немає';
 
-      document.getElementById('profileStars').innerText = stars;
-      document.getElementById('profileCheese').innerText = score;
-    }
-
-    setInterval(() => {
-      if (energy < maxEnergy) {
-        energy++;
-        localStorage.setItem('petTapEnergy', energy);
-        updateUI();
+      if (!hasPet) {
+        document.getElementById('mouseEmoji').innerText = '🪹';
+        document.getElementById('marketPetIcon').innerText = '🪹';
+        document.getElementById('btnSellPet').classList.add('btn-disabled');
+        document.getElementById('buyPetCard').style.display = 'flex';
+      } else {
+        document.getElementById('mouseEmoji').innerText = '🐭';
+        document.getElementById('marketPetIcon').innerText = '🐭';
+        document.getElementById('btnSellPet').classList.remove('btn-disabled');
+        document.getElementById('buyPetCard').style.display = 'none';
       }
-    }, 1500);
+    }
 
     function switchPage(pageId, btn) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -291,6 +401,8 @@
       document.getElementById(`page-${pageId}`).classList.add('active');
       btn.classList.add('active');
     }
+
+    updateUI();
   </script>
 </body>
 </html>
