@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PetTap Game</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #1e1e2f, #0f0f1a);
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .header {
+      text-align: center;
+      margin-top: 10px;
+    }
+    .score-container {
+      font-size: 32px;
+      font-weight: bold;
+      color: #ffcc00;
+      text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+    }
+    .mouse-area {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    .mouse-btn {
+      font-size: 110px;
+      transition: transform 0.08s ease-in-out;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+    }
+    .mouse-btn:active {
+      transform: scale(0.88);
+    }
+    .floating-text {
+      position: absolute;
+      font-size: 28px;
+      font-weight: bold;
+      color: #00ff88;
+      pointer-events: none;
+      animation: floatUp 0.8s forwards ease-out;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-80px); }
+    }
+    .footer {
+      width: 100%;
+      max-width: 350px;
+      text-align: center;
+    }
+    .energy-bar-bg {
+      background: #33334d;
+      border-radius: 12px;
+      height: 16px;
+      width: 100%;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .energy-bar-fill {
+      background: linear-gradient(90deg, #ff9900, #ffcc00);
+      height: 100%;
+      width: 100%;
+      transition: width 0.2s;
+    }
+    .energy-text {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 15px;
+    }
+    .btn-sell {
+      background: linear-gradient(90deg, #007aff, #00c6ff);
+      border: none;
+      color: white;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 14px;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
+    }
+    .btn-sell:active {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🐭 PetTap Game</h1>
+    <div class="score-container">⚡ <span id="score">0</span></div>
+  </div>
+
+  <div class="mouse-area" id="tapArea">
+    <div class="mouse-btn" id="mouseEmoji">🐭</div>
+  </div>
+
+  <div class="footer">
+    <div class="energy-bar-bg">
+      <div class="energy-bar-fill" id="energyFill"></div>
+    </div>
+    <div class="energy-text">Енергія: <span id="energy">100</span>/100</div>
+    <button class="btn-sell" onclick="sellToAdmin()">🤝 Запропонувати угоду адміну</button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let score = parseInt(localStorage.getItem('petTapScore')) || 0;
+    let energy = parseInt(localStorage.getItem('petTapEnergy')) || 100;
+    const maxEnergy = 100;
+
+    const scoreEl = document.getElementById('score');
+    const energyEl = document.getElementById('energy');
+    const energyFill = document.getElementById('energyFill');
+    const tapArea = document.getElementById('tapArea');
+
+    scoreEl.innerText = score;
+    updateEnergyUI();
+
+    // Клік по миші
+    tapArea.addEventListener('click', (e) => {
+      if (energy <= 0) {
+        tg.HapticFeedback.notificationOccurred('error');
+        return;
+      }
+
+      score += 1;
+      energy -= 1;
+
+      localStorage.setItem('petTapScore', score);
+      localStorage.setItem('petTapEnergy', energy);
+
+      scoreEl.innerText = score;
+      updateEnergyUI();
+
+      if (tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('light');
+      }
+
+      // Анімація вильоту +1
+      showFloatingText(e.clientX, e.clientY);
+    });
+
+    function showFloatingText(x, y) {
+      const text = document.createElement('div');
+      text.className = 'floating-text';
+      text.innerText = '+1';
+      text.style.left = `${x - 15}px`;
+      text.style.top = `${y - 40}px`;
+      document.body.appendChild(text);
+
+      setTimeout(() => text.remove(), 800);
+    }
+
+    function updateEnergyUI() {
+      energyEl.innerText = energy;
+      const pct = (energy / maxEnergy) * 100;
+      energyFill.style.width = `${pct}%`;
+    }
+
+    // Регенерація енергії щосекунди
+    setInterval(() => {
+      if (energy < maxEnergy) {
+        energy++;
+        localStorage.setItem('petTapEnergy', energy);
+        updateEnergyUI();
+      }
+    }, 1500);
+
+    // Відправка даних адміну
+    function sellToAdmin() {
+      if (score < 10) {
+        tg.showAlert("Натапай хоча б 10 монеток для пропозиції!");
+        return;
+      }
+
+      tg.sendData(JSON.stringify({
+        action: "sell_request",
+        score: score
+      }));
+    }
+  </script>
+</body>
+</html>
