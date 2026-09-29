@@ -3,121 +3,168 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>PetTap Game</title>
+  <title>PetTap Game & Cases</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      user-select: none;
-    }
+    * { box-sizing: border-box; user-select: none; }
     body {
-      margin: 0;
-      padding: 20px;
+      margin: 0; padding: 0;
       background: linear-gradient(135deg, #1e1e2f, #0f0f1a);
       color: #fff;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: space-between;
-      height: 100vh;
       overflow: hidden;
     }
-    .header {
-      text-align: center;
-      margin-top: 10px;
+    
+    .page { display: none; padding: 20px; flex-direction: column; align-items: center; height: 100%; overflow-y: auto; padding-bottom: 80px; }
+    .page.active { display: flex; }
+
+    /* Тапалка */
+    .header { text-align: center; margin-top: 10px; }
+    .score-container { font-size: 28px; font-weight: bold; color: #ffcc00; display: flex; gap: 15px; justify-content: center; }
+    .mouse-area { margin: auto 0; cursor: pointer; }
+    .mouse-btn { font-size: 110px; transition: transform 0.08s; }
+    .mouse-btn:active { transform: scale(0.88); }
+    
+    .energy-box { width: 100%; max-width: 320px; text-align: center; margin-bottom: 10px; }
+    .energy-bar-bg { background: #33334d; border-radius: 12px; height: 14px; width: 100%; overflow: hidden; }
+    .energy-bar-fill { background: linear-gradient(90deg, #ff9900, #ffcc00); height: 100%; width: 100%; }
+
+    /* Карточки та Кейси */
+    .grid-list { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+    .card { background: #2a2a40; border-radius: 14px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .card-info { display: flex; align-items: center; gap: 12px; }
+    .card-icon { font-size: 36px; }
+    .btn-action { background: #007aff; border: none; color: white; padding: 10px 14px; font-weight: bold; border-radius: 10px; cursor: pointer; }
+    .btn-action:active { opacity: 0.8; }
+    .btn-stars { background: linear-gradient(90deg, #ffcc00, #ff9900); color: #000; }
+    .btn-sub { background: linear-gradient(90deg, #00c6ff, #007aff); }
+
+    /* Нижнє Меню */
+    .nav-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; justify-content: space-around; background: #151522; padding: 10px 0;
+      border-top: 1px solid #2a2a40; width: 100%; z-index: 100;
     }
-    .score-container {
-      font-size: 32px;
-      font-weight: bold;
-      color: #ffcc00;
-      text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
-    }
-    .mouse-area {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-    }
-    .mouse-btn {
-      font-size: 110px;
-      transition: transform 0.08s ease-in-out;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
-    }
-    .mouse-btn:active {
-      transform: scale(0.88);
-    }
-    .floating-text {
-      position: absolute;
-      font-size: 28px;
-      font-weight: bold;
-      color: #00ff88;
-      pointer-events: none;
-      animation: floatUp 0.8s forwards ease-out;
-    }
-    @keyframes floatUp {
-      0% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-80px); }
-    }
-    .footer {
-      width: 100%;
-      max-width: 350px;
-      text-align: center;
-    }
-    .energy-bar-bg {
-      background: #33334d;
-      border-radius: 12px;
-      height: 16px;
-      width: 100%;
-      overflow: hidden;
-      margin-bottom: 8px;
-    }
-    .energy-bar-fill {
-      background: linear-gradient(90deg, #ff9900, #ffcc00);
-      height: 100%;
-      width: 100%;
-      transition: width 0.2s;
-    }
-    .energy-text {
-      font-size: 14px;
-      color: #aaa;
-      margin-bottom: 15px;
-    }
-    .btn-sell {
-      background: linear-gradient(90deg, #007aff, #00c6ff);
-      border: none;
-      color: white;
-      padding: 14px 20px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 14px;
-      width: 100%;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0, 122, 255, 0.4);
-    }
-    .btn-sell:active {
-      opacity: 0.8;
-    }
+    .nav-item { color: #8e8e93; font-size: 11px; border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .nav-item.active { color: #007aff; font-weight: bold; }
+    .nav-icon { font-size: 20px; }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>🐭 PetTap Game</h1>
-    <div class="score-container">⚡ <span id="score">0</span></div>
-  </div>
-
-  <div class="mouse-area" id="tapArea">
-    <div class="mouse-btn" id="mouseEmoji">🐭</div>
-  </div>
-
-  <div class="footer">
-    <div class="energy-bar-bg">
-      <div class="energy-bar-fill" id="energyFill"></div>
+  <!-- 1. ТАПАЛКА -->
+  <div id="page-tap" class="page active">
+    <div class="header">
+      <h1>🐭 PetTap</h1>
+      <div class="score-container">
+        <span>🧀 <span id="score">0</span></span>
+        <span>⭐ <span id="starsScore">0</span></span>
+      </div>
     </div>
-    <div class="energy-text">Енергія: <span id="energy">100</span>/100</div>
-    <button class="btn-sell" onclick="sellToAdmin()">🤝 Зберегти монети в бота</button>
+
+    <div class="mouse-area" id="tapArea">
+      <div class="mouse-btn" id="mouseEmoji">🐭</div>
+    </div>
+
+    <div class="energy-box">
+      <div class="energy-bar-bg"><div class="energy-bar-fill" id="energyFill"></div></div>
+      <div style="font-size: 12px; color: #aaa; margin-top: 5px;">Енергія: <span id="energy">100</span>/100</div>
+    </div>
+  </div>
+
+  <!-- 2. КЕЙСИ (ЛУТБОКСИ) -->
+  <div id="page-cases" class="page">
+    <h2>📦 Рулетка Кейсів</h2>
+    <p style="color: #aaa; font-size: 13px; text-align: center;">Випробуй удачу та вигравай Stars або Подарунки!</p>
+    
+    <div class="grid-list">
+      <!-- Кейс за підписку -->
+      <div class="card" style="border: 1px solid #00c6ff;">
+        <div class="card-info">
+          <div class="card-icon">📢</div>
+          <div><b>Кейс Каналу</b><br><small>За підписку на наш TГ-канал</small></div>
+        </div>
+        <button class="btn-action btn-sub" onclick="openChannelCase()">Забрати</button>
+      </div>
+
+      <!-- Кейс за Сир (Зірки випадають важко) -->
+      <div class="card">
+        <div class="card-info">
+          <div class="card-icon">🧀</div>
+          <div><b>Сирний Кейс</b><br><small>Шанс: 1⭐ (часто), 2⭐ (рідко)</small></div>
+        </div>
+        <button class="btn-action" onclick="openCheeseCase()">100 🧀</button>
+      </div>
+
+      <!-- Кейс за Stars -->
+      <div class="card">
+        <div class="card-info">
+          <div class="card-icon">⭐</div>
+          <div><b>Зоряний Кейс</b><br><small>Шанс виграти Подарунок!</small></div>
+        </div>
+        <button class="btn-action btn-stars" onclick="buyStarsCase(10)">10 ⭐</button>
+      </div>
+
+      <!-- Платний VIP Кейс -->
+      <div class="card">
+        <div class="card-info">
+          <div class="card-icon">🎁</div>
+          <div><b>VIP Донат Кейс</b><br><small>Гарантований супер-приз</small></div>
+        </div>
+        <button class="btn-action btn-stars" onclick="buyDonateCase()">1.99$</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. МАГАЗИН ПОДАРУНКІВ ЗА ЗІРКИ -->
+  <div id="page-gifts" class="page">
+    <h2>🎁 Магазин Подарунків</h2>
+    <p style="color: #aaa; font-size: 13px; text-align: center;">Назбирати 15 ⭐ важко, але воно того варте!</p>
+
+    <div class="grid-list">
+      <div class="card">
+        <div class="card-info">
+          <div class="card-icon">🧸</div>
+          <div><b>Плюшевий Ведмедик</b><br><small>Подарунок у профіль TГ</small></div>
+        </div>
+        <button class="btn-action btn-stars" onclick="buyGift('Плюшевий Ведмедик', 15)">15 ⭐</button>
+      </div>
+
+      <div class="card">
+        <div class="card-info">
+          <div class="card-icon">🚀</div>
+          <div><b>Telegram Premium (1 міс)</b><br><small>Ексклюзивна підписка</small></div>
+        </div>
+        <button class="btn-action btn-stars" onclick="buyGift('TG Premium', 50)">50 ⭐</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. РИНОК МИШЕЙ -->
+  <div id="page-shop" class="page">
+    <h2>🐭 Ринок мишей</h2>
+    <div class="grid-list">
+      <div class="card">
+        <div class="card-info"><div class="card-icon">🐹</div><div><b>Хом'як</b><br><small>+2 за тап</small></div></div>
+        <button class="btn-action" onclick="buyPet('🐹', 2, 50)">50 🧀</button>
+      </div>
+      <div class="card">
+        <div class="card-info"><div class="card-icon">🦔</div><div><b>Їжачок</b><br><small>+5 за тап</small></div></div>
+        <button class="btn-action" onclick="buyPet('🦔', 5, 200)">200 🧀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- НИЖНЄ МЕНЮ -->
+  <div class="nav-bar">
+    <button class="nav-item active" onclick="switchPage('tap', this)"><span class="nav-icon">🎮</span>Гра</button>
+    <button class="nav-item" onclick="switchPage('cases', this)"><span class="nav-icon">📦</span>Кейси</button>
+    <button class="nav-item" onclick="switchPage('gifts', this)"><span class="nav-icon">🎁</span>Подарунки</button>
+    <button class="nav-item" onclick="switchPage('shop', this)"><span class="nav-icon">🐭</span>Ринок</button>
   </div>
 
   <script>
@@ -125,77 +172,134 @@
     tg.expand();
 
     let score = parseInt(localStorage.getItem('petTapScore')) || 0;
+    let stars = parseInt(localStorage.getItem('petTapStars')) || 0;
     let energy = parseInt(localStorage.getItem('petTapEnergy')) || 100;
+    let tapPower = parseInt(localStorage.getItem('petTapPower')) || 1;
+    let currentEmoji = localStorage.getItem('petEmoji') || '🐭';
+    let isSubscribed = localStorage.getItem('petSubscribed') === 'true';
     const maxEnergy = 100;
 
     const scoreEl = document.getElementById('score');
+    const starsEl = document.getElementById('starsScore');
     const energyEl = document.getElementById('energy');
     const energyFill = document.getElementById('energyFill');
     const tapArea = document.getElementById('tapArea');
+    const mouseEmoji = document.getElementById('mouseEmoji');
 
-    scoreEl.innerText = score;
-    updateEnergyUI();
+    mouseEmoji.innerText = currentEmoji;
+    updateUI();
 
-    // Клік по миші
-    tapArea.addEventListener('click', (e) => {
-      if (energy <= 0) {
-        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
-        return;
-      }
-
-      score += 1;
+    // Тап
+    tapArea.addEventListener('click', () => {
+      if (energy <= 0) return;
+      score += tapPower;
       energy -= 1;
-
-      localStorage.setItem('petTapScore', score);
-      localStorage.setItem('petTapEnergy', energy);
-
-      scoreEl.innerText = score;
-      updateEnergyUI();
-
-      if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
-      }
-
-      showFloatingText(e.clientX, e.clientY);
+      saveData();
+      updateUI();
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     });
 
-    function showFloatingText(x, y) {
-      const text = document.createElement('div');
-      text.className = 'floating-text';
-      text.innerText = '+1';
-      text.style.left = `${x - 15}px`;
-      text.style.top = `${y - 40}px`;
-      document.body.appendChild(text);
-
-      setTimeout(() => text.remove(), 800);
+    // 1. Кейс за Сир (100🧀)
+    function openCheeseCase() {
+      if (score < 100) { tg.showAlert("Потрібно 100 🧀 сиру!"); return; }
+      score -= 100;
+      
+      // Шанси: 70% = +20 сиру, 25% = 1 Star, 5% = 2 Stars
+      let rand = Math.random() * 100;
+      if (rand < 70) {
+        score += 20;
+        tg.showAlert("Ви виграли: 20 🧀 сиру!");
+      } else if (rand < 95) {
+        stars += 1;
+        tg.showAlert("🎉 УРА! Ви виграли 1 ⭐ Зірку!");
+      } else {
+        stars += 2;
+        tg.showAlert("🔥 СУПЕР ДЖЕКПОТ! Ви виграли 2 ⭐ Зірки!");
+      }
+      saveData();
+      updateUI();
     }
 
-    function updateEnergyUI() {
+    // 2. Кейс за підписку
+    function openChannelCase() {
+      if (isSubscribed) { tg.showAlert("Ви вже забрали цей кейс!"); return; }
+      
+      // Відкриваємо канал (заміни посилання на свій канал)
+      tg.openTelegramLink("https://t.me/your_channel_name");
+      
+      setTimeout(() => {
+        isSubscribed = true;
+        stars += 2;
+        score += 150;
+        localStorage.setItem('petSubscribed', 'true');
+        saveData();
+        updateUI();
+        tg.showAlert("Дякуємо за підписку! Нагорода: +2 ⭐ та 150 🧀!");
+      }, 3000);
+    }
+
+    // 3. Платні Кейси
+    function buyStarsCase(cost) {
+      tg.sendData(JSON.stringify({ action: "buy_case", type: "stars_case", cost: cost }));
+    }
+
+    function buyDonateCase() {
+      tg.sendData(JSON.stringify({ action: "buy_case", type: "donate_case" }));
+    }
+
+    // 4. Покупка Подарунків
+    function buyGift(giftName, cost) {
+      if (stars < cost) {
+        tg.showAlert(`Недостатньо Зірок! Потрібно ${cost} ⭐. Відкривай кейси та збирай більше!`);
+        return;
+      }
+      stars -= cost;
+      saveData();
+      updateUI();
+      tg.sendData(JSON.stringify({ action: "claim_gift", gift: giftName }));
+      tg.showAlert(`🎉 ВІТАЄМО! Ви успішно обміняли ${cost} ⭐ на ${giftName}! Бот надішле його вам у чат.`);
+    }
+
+    // Покупка Пета
+    function buyPet(emoji, power, cost) {
+      if (score < cost) { tg.showAlert("Недостатньо сиру 🧀!"); return; }
+      score -= cost;
+      tapPower = power;
+      currentEmoji = emoji;
+      mouseEmoji.innerText = emoji;
+      saveData();
+      updateUI();
+      tg.showAlert(`Успіх! Новий пет: ${emoji}`);
+    }
+
+    function saveData() {
+      localStorage.setItem('petTapScore', score);
+      localStorage.setItem('petTapStars', stars);
+      localStorage.setItem('petTapEnergy', energy);
+      localStorage.setItem('petTapPower', tapPower);
+      localStorage.setItem('petEmoji', currentEmoji);
+    }
+
+    function updateUI() {
+      scoreEl.innerText = score;
+      starsEl.innerText = stars;
       energyEl.innerText = energy;
-      const pct = (energy / maxEnergy) * 100;
-      energyFill.style.width = `${pct}%`;
+      energyFill.style.width = `${(energy / maxEnergy) * 100}%`;
     }
 
-    // Регенерація енергії
     setInterval(() => {
       if (energy < maxEnergy) {
         energy++;
         localStorage.setItem('petTapEnergy', energy);
-        updateEnergyUI();
+        updateUI();
       }
     }, 1500);
 
-    // Відправка монет боту
-    function sellToAdmin() {
-      if (score < 1) {
-        tg.showAlert("Натапай хоча б 1 монетку!");
-        return;
-      }
-
-      tg.sendData(JSON.stringify({
-        action: "sell_request",
-        score: score
-      }));
+    function switchPage(pageId, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.getElementById(`page-${pageId}`).classList.add('active');
+      btn.classList.add('active');
     }
   </script>
 </body>
