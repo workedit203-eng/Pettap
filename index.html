@@ -117,7 +117,7 @@
       <div class="energy-bar-fill" id="energyFill"></div>
     </div>
     <div class="energy-text">Енергія: <span id="energy">100</span>/100</div>
-    <button class="btn-sell" onclick="sellToAdmin()">🤝 Запропонувати угоду адміну</button>
+    <button class="btn-sell" onclick="sellToAdmin()">🤝 Зберегти монети в бота</button>
   </div>
 
   <script>
@@ -139,7 +139,7 @@
     // Клік по миші
     tapArea.addEventListener('click', (e) => {
       if (energy <= 0) {
-        tg.HapticFeedback.notificationOccurred('error');
+        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
         return;
       }
 
@@ -156,7 +156,6 @@
         tg.HapticFeedback.impactOccurred('light');
       }
 
-      // Анімація вильоту +1
       showFloatingText(e.clientX, e.clientY);
     });
 
@@ -177,7 +176,7 @@
       energyFill.style.width = `${pct}%`;
     }
 
-    // Регенерація енергії щосекунди
+    // Регенерація енергії
     setInterval(() => {
       if (energy < maxEnergy) {
         energy++;
@@ -186,10 +185,10 @@
       }
     }, 1500);
 
-    // Відправка даних адміну
+    // Відправка монет боту
     function sellToAdmin() {
-      if (score < 10) {
-        tg.showAlert("Натапай хоча б 10 монеток для пропозиції!");
+      if (score < 1) {
+        tg.showAlert("Натапай хоча б 1 монетку!");
         return;
       }
 
