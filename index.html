@@ -47,11 +47,23 @@
     }
     .nav-item { color: #8e8e93; font-size: 10px; border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
     .nav-item.active { color: #ffcc00; font-weight: bold; }
+
+    #admin-open-btn {
+      display: none; position: fixed; top: 10px; right: 10px; z-index: 9999;
+      background: #ff0055; color: #fff; border: none; padding: 8px 12px;
+      border-radius: 8px; font-weight: bold; cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 0, 85, 0.6);
+    }
+    #admin-modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); z-index: 10000; padding: 20px; box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
 
-  <!-- ВЕРХНЄ МЕНЮ -->
+  <button id="admin-open-btn" onclick="toggleAdminModal(true)">🛠 Admin Panel</button>
+
   <div class="top-panel">
     <div class="score-container">
       <span>🧀 <span id="score">0</span></span>
@@ -69,12 +81,42 @@
     </div>
   </div>
 
-  <!-- 2. МАГАЗИН МИШЕЙ -->
+  <!-- 2. ЗАВДАННЯ -->
+  <div id="page-tasks" class="page">
+    <h3 style="color: #ffcc00; margin: 5px 0;">📋 Завдання та Нагороди</h3>
+    <div class="grid-list">
+      <div class="card">
+        <div class="card-info">
+          <div style="font-size: 30px;">📅</div>
+          <div><b>Щоденний бонус</b><br><small style="color:#aaa;">Заходь щодня</small></div>
+        </div>
+        <button id="btn-daily-task" class="btn-action btn-green" onclick="claimDailyReward()">+500 🧀</button>
+      </div>
+
+      <div class="card">
+        <div class="card-info">
+          <div style="font-size: 30px;">📢</div>
+          <div><b>Підписка на Telegram</b><br><small style="color:#aaa;">Будь у курсі новин</small></div>
+        </div>
+        <button id="btn-tg-task" class="btn-action btn-stars" onclick="completeTelegramTask()">+5 ⭐</button>
+      </div>
+
+      <div class="card">
+        <div class="card-info">
+          <div style="font-size: 30px;">⚡</div>
+          <div><b>Зробити 1,000 тапів</b><br><small style="color:#aaa;">Досягни 1k тапів</small></div>
+        </div>
+        <button id="btn-tap-task" class="btn-action" onclick="claimTapReward()">+1,000 🧀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. МАГАЗИН МИШЕЙ -->
   <div id="page-shop" class="page">
     <h3 style="color: #ffcc00; margin: 5px 0;">🐭 Магазин Мишей (11 видів)</h3>
     <div class="grid-list">
       <div class="card"><div class="card-info"><div style="font-size: 30px;">⚙️🐭</div><div><b>Кібер-Миша</b><br><small class="badge-rare">Рідкісна | Тап x2</small></div></div><button class="btn-action" onclick="buyMouse('Кібер-Миша', 2, 2000, 'cheese')">2,000 🧀</button></div>
-      <div class="card"><div class="card-info"><div style="font-size: 30px;">⚔️🐭</div><div><b>Миша-Воїн</b><br><small class="badge-rare">Рідкісна | Тап x3</small></div></div><button class="btn-action" onclick="buyMouse('Миша-Воїн', 3, 5000, 'cheese')">5,000 🧀</button></div>
+      <div class="card"><div class="card-info"><div style="font-size: 30px;">⚔️️🐭</div><div><b>Миша-Воїн</b><br><small class="badge-rare">Рідкісна | Тап x3</small></div></div><button class="btn-action" onclick="buyMouse('Миша-Воїн', 3, 5000, 'cheese')">5,000 🧀</button></div>
       <div class="card"><div class="card-info"><div style="font-size: 30px;">🧙‍♂️🐭</div><div><b>Миша-Маг</b><br><small class="badge-rare">Рідкісна | Тап x4</small></div></div><button class="btn-action" onclick="buyMouse('Миша-Маг', 4, 12000, 'cheese')">12,000 🧀</button></div>
       <div class="card"><div class="card-info"><div style="font-size: 30px;">🔥🐭</div><div><b>Вогняна Миша</b><br><small class="badge-epic">Епічна | Тап x6</small></div></div><button class="btn-action" onclick="buyMouse('Вогняна Миша', 6, 25000, 'cheese')">25,000 🧀</button></div>
       <div class="card"><div class="card-info"><div style="font-size: 30px;">❄️🐭</div><div><b>Крижана Миша</b><br><small class="badge-epic">Епічна | Тап x8</small></div></div><button class="btn-action" onclick="buyMouse('Крижана Миша', 8, 50000, 'cheese')">50,000 🧀</button></div>
@@ -83,11 +125,11 @@
       <div class="card" style="border: 1px solid #ffcc00;"><div class="card-info"><div style="font-size: 30px;">🐉🐭</div><div><b>Драконяча Миша</b><br><small class="badge-legend">Легендарна | Тап x40</small></div></div><button class="btn-action btn-stars" onclick="buyMouse('Драконяча Миша', 40, 11, 'stars')">11 ⭐</button></div>
       <div class="card" style="border: 1px solid #ffcc00;"><div class="card-info"><div style="font-size: 30px;">🌌🐭</div><div><b>Космічна Миша</b><br><small class="badge-legend">Легендарна | Тап x60</small></div></div><button class="btn-action btn-stars" onclick="buyMouse('Космічна Миша', 60, 11, 'stars')">11 ⭐</button></div>
       <div class="card" style="border: 1px solid #ff0055;"><div class="card-info"><div style="font-size: 30px;">💎🐭</div><div><b>Алмазна Миша</b><br><small class="badge-mythic">Міфічна | Тап x100</small></div></div><button class="btn-action btn-stars" onclick="buyMouse('Алмазна Миша', 100, 11, 'stars')">11 ⭐</button></div>
-      <div class="card" style="border: 1px solid #ff0055;"><div class="card-info"><div style="font-size: 30px;">🔱🐭</div><div><b>Божественна Миша</b><br><small class="badge-mythic">Міфічна | Тап x200</small></div></div><button class="btn-action btn-stars" onclick="buyMouse('Божественна Миша', 200, 11, 'stars')">11 ⭐</button></div>
+      <div class="card" style="border: 1px solid #ff0055;"><div class="card-info"><div style="font-size: 30px;">🔱🐭</div><div><b>Божественна Миша</b><br><small class="badge-mythic">Міфічна | Тап x200</small></div></div><button class="btn-action btn-stars" onclick="buyMouse('Божественна Миша', 200, 200, 'stars')">200 ⭐</button></div>
     </div>
   </div>
 
-  <!-- 3. КЕЙСИ С ЗІРКАМИ Й ПРЕДМЕТАМИ -->
+  <!-- 4. КЕЙСИ С ЗІРКАМИ Й ПРЕДМЕТАМИ -->
   <div id="page-roulette" class="page">
     <h3 style="color: #ffcc00; margin: 5px 0;">📦 Скрині й Дроп</h3>
     <div class="grid-list">
@@ -124,17 +166,17 @@
         <button class="btn-action" onclick="openRiskCase(100, 'cheese', 'Початковий')">100 🧀</button>
       </div>
       <div class="card">
-        <div class="card-info"><div style="font-size: 28px;">🥉</div><div><b>Мідний Кейс</b><br><small style="color:#aaa;">Ціна: 500 🧀</small></div></div>
-        <button class="btn-action" onclick="openRiskCase(500, 'cheese', 'Мідний')">500 🧀</button>
+        <div class="card-info"><div style="font-size: 28px;">🥉</div><div><b>Мідний Кейс</b><br><small style="color:#aaa;">Шанс 15% на 1 ⭐ | 500 🧀</small></div></div>
+        <button class="btn-action" onclick="openCopperCase()">500 🧀</button>
       </div>
       <div class="card">
-        <div class="card-info"><div style="font-size: 28px;">🥈</div><div><b>Срібний Кейс</b><br><small style="color:#aaa;">Ціна: 2,500 🧀</small></div></div>
-        <button class="btn-action" onclick="openRiskCase(2500, 'cheese', 'Срібний')">2,500 🧀</button>
+        <div class="card-info"><div style="font-size: 28px;">🥈</div><div><b>Срібний Кейс</b><br><small style="color:#aaa;">Шанс 2% на 1 ⭐ | 2,500 🧀</small></div></div>
+        <button class="btn-action" onclick="openSilverCase()">2,500 🧀</button>
       </div>
     </div>
   </div>
 
-  <!-- 4. АУКЦІОН -->
+  <!-- 5. АУКЦІОН -->
   <div id="page-auction" class="page">
     <h3 style="color: #ffcc00;">🏷 Аукціон Мишей (P2P)</h3>
     <div class="card" style="flex-direction: column; align-items: flex-start; gap: 8px;">
@@ -146,7 +188,7 @@
     <div class="grid-list" id="auctionList" style="margin-top: 5px;"></div>
   </div>
 
-  <!-- 5. ПРОФІЛЬ -->
+  <!-- 6. ПРОФІЛЬ -->
   <div id="page-profile" class="page">
     <h3 style="color: #00ffcc;">👤 Профіль</h3>
     <div class="grid-list">
@@ -166,9 +208,46 @@
     </div>
   </div>
 
-  <!-- НИЖНЄ МЕНЮ -->
+  <!-- МОДАЛЬНЕ ВІКНО АДМІН-ПАНЕЛІ -->
+  <div id="admin-modal">
+    <div style="background: #1c1d2e; max-width: 380px; margin: 30px auto; padding: 20px; border-radius: 14px; border: 2px solid #ff0055; box-shadow: 0 0 15px rgba(255,0,85,0.4);">
+      <h2 style="color: #ff0055; margin-top: 0; text-align: center;">⚡ VIP Адмін Панель</h2>
+      
+      <button onclick="grantAdminUnlimited()" style="width: 100%; padding: 12px; background: #00ffcc; color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 15px;">
+        🚀 Увімкнути Безліміт (Режим Бога)
+      </button>
+
+      <hr style="border-color: #2a2c45; margin: 15px 0;">
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: #aaa;">Додати Сиру 🧀:</label>
+        <input type="number" id="admin-cheese-input" placeholder="Кількість..." style="margin-top: 4px;">
+        <button onclick="addAdminCheese()" class="btn-action" style="width: 100%; margin-top: 6px; background: #ffcc00; color: #000;">+ Додати Сир</button>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; color: #aaa;">Додати Зірок ⭐:</label>
+        <input type="number" id="admin-stars-input" placeholder="Кількість..." style="margin-top: 4px;">
+        <button onclick="addAdminStars()" class="btn-action btn-stars" style="width: 100%; margin-top: 6px;">+ Додати Зірки</button>
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <label style="font-size: 12px; color: #aaa;">Додати Предмети:</label>
+        <div style="display: flex; gap: 8px; margin-top: 6px;">
+          <button onclick="addAdminItem('bear')" class="btn-action" style="flex: 1; background: #28a745;">+1 🧸 Ведмедик</button>
+          <button onclick="addAdminItem('ring')" class="btn-action" style="flex: 1; background: #a020f0;">+1 💍 Колечко</button>
+        </div>
+      </div>
+
+      <button onclick="toggleAdminModal(false)" style="width: 100%; padding: 10px; background: #2a2c45; color: #fff; border: none; border-radius: 8px; cursor: pointer;">
+        Закрити
+      </button>
+    </div>
+  </div>
+
   <div class="nav-bar">
     <button class="nav-item active" onclick="switchPage('tap', this)">🎮 Гра</button>
+    <button class="nav-item" onclick="switchPage('tasks', this)">📋 Завдання</button>
     <button class="nav-item" onclick="switchPage('shop', this)">🐭 Миші</button>
     <button class="nav-item" onclick="switchPage('roulette', this)">🎁 Кейси</button>
     <button class="nav-item" onclick="switchPage('auction', this)">🏷 Аукціон</button>
@@ -176,6 +255,9 @@
   </div>
 
   <script>
+    // ⚠️ ВСТАНОВЛЕНО ВАШ TELEGRAM ID:
+    const MY_ADMIN_TELEGRAM_ID = 7814068068;
+
     const tg = window.Telegram?.WebApp;
     if (tg) tg.expand();
 
@@ -186,6 +268,10 @@
     let bearsCount = parseInt(localStorage.getItem('pt_bears')) || 0;
     let ringsCount = parseInt(localStorage.getItem('pt_rings')) || 0;
     let myMice = JSON.parse(localStorage.getItem('pt_my_mice') || '["Звичайна Миша"]');
+
+    let taskDailyClaimed = localStorage.getItem('pt_task_daily') === 'true';
+    let taskTgClaimed = localStorage.getItem('pt_task_tg') === 'true';
+    let taskTapClaimed = localStorage.getItem('pt_task_tap') === 'true';
 
     const shopPrices = {
       "Кібер-Миша": { price: 2000, currency: "cheese", power: 2 },
@@ -203,6 +289,100 @@
 
     let auctionLots = JSON.parse(localStorage.getItem('pt_auction_lots')) || [];
 
+    function getTgUserId() {
+      return window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
+    }
+
+    function isAdmin() {
+      const currentId = getTgUserId();
+      return currentId === MY_ADMIN_TELEGRAM_ID;
+    }
+
+    function checkAdminAccess() {
+      if (isAdmin()) {
+        document.getElementById('admin-open-btn').style.display = 'block';
+      }
+    }
+
+    function toggleAdminModal(show) {
+      if (!isAdmin()) return;
+      document.getElementById('admin-modal').style.display = show ? 'block' : 'none';
+    }
+
+    function grantAdminUnlimited() {
+      if (!isAdmin()) return;
+      score = 999999999;
+      stars = 999999;
+      tapPower = 200;
+      bearsCount += 99;
+      ringsCount += 99;
+      
+      const allMice = Object.keys(shopPrices);
+      allMice.forEach(m => {
+        if (!myMice.includes(m)) myMice.push(m);
+      });
+
+      saveData();
+      updateUI();
+      alert("🚀 Безлімітний режим увімкнено! Усі ресурси та миші отримано.");
+    }
+
+    function addAdminCheese() {
+      if (!isAdmin()) return;
+      const val = parseInt(document.getElementById('admin-cheese-input').value) || 0;
+      score += val;
+      saveData();
+      updateUI();
+      alert(`Додано ${val} 🧀!`);
+    }
+
+    function addAdminStars() {
+      if (!isAdmin()) return;
+      const val = parseInt(document.getElementById('admin-stars-input').value) || 0;
+      stars += val;
+      saveData();
+      updateUI();
+      alert(`Додано ${val} ⭐!`);
+    }
+
+    function addAdminItem(type) {
+      if (!isAdmin()) return;
+      if (type === 'bear') bearsCount += 1;
+      if (type === 'ring') ringsCount += 1;
+      saveData();
+      updateUI();
+      alert("Предмет додано в інвентар!");
+    }
+
+    function claimDailyReward() {
+      if (taskDailyClaimed) return alert("❌ Ви вже забрали сьогоднішню нагороду!");
+      score += 500;
+      taskDailyClaimed = true;
+      localStorage.setItem('pt_task_daily', 'true');
+      alert("🎉 Отримано +500 🧀 за щоденний вхід!");
+      saveData(); updateUI();
+    }
+
+    function completeTelegramTask() {
+      if (taskTgClaimed) return alert("❌ Ви вже виконали це завдання!");
+      window.open('https://t.me/telegram', '_blank');
+      stars += 5;
+      taskTgClaimed = true;
+      localStorage.setItem('pt_task_tg', 'true');
+      alert("🎉 Дякуємо за підписку! Отримано +5 ⭐!");
+      saveData(); updateUI();
+    }
+
+    function claimTapReward() {
+      if (taskTapClaimed) return alert("❌ Завдання вже виконане!");
+      if (totalTaps < 1000) return alert(`❌ Потрібно 1,000 тапів (у вас: ${totalTaps})`);
+      score += 1000;
+      taskTapClaimed = true;
+      localStorage.setItem('pt_task_tap', 'true');
+      alert("🎉 Вітаємо! +1,000 🧀 додано!");
+      saveData(); updateUI();
+    }
+
     document.getElementById('tapArea').addEventListener('click', () => {
       score += tapPower;
       totalTaps += 1;
@@ -210,7 +390,48 @@
       saveData(); updateUI();
     });
 
-    // 💼 VIP КЕЙС (20 ⭐) — Рідкісний шанс на 🧸 Ведмедика (5%)
+    // Мідний кейс (15% шанс на 1 ⭐)
+    function openCopperCase() {
+      if (score < 500) return alert("❌ Недостатньо 🧀 (потрібно 500)!");
+      score -= 500;
+
+      const rand = Math.random() * 100;
+      if (rand < 15) { // 15% ШАНС НА ЗІРКУ
+        stars += 1;
+        alert("🌟 ВАУ! З Мідного кейсу випала 1 ⭐!");
+      } else if (rand < 55) {
+        alert("💨 Нічого не випало.");
+      } else if (rand < 85) {
+        score += 500;
+        alert("📦 Повернули 500 🧀!");
+      } else {
+        score += 1500;
+        alert("✨ ДЖЕКПОТ! Виграли 1,500 🧀!");
+      }
+      saveData(); updateUI();
+    }
+
+    // Срібний кейс (2% шанс на 1 ⭐)
+    function openSilverCase() {
+      if (score < 2500) return alert("❌ Недостатньо 🧀 (потрібно 2,500)!");
+      score -= 2500;
+
+      const rand = Math.random() * 100;
+      if (rand < 2) { // 2% ШАНС НА ЗІРКУ
+        stars += 1;
+        alert("🌟 РІДКІСТЬ! З Срібного кейсу випала 1 ⭐!");
+      } else if (rand < 50) {
+        alert("💨 Нічого не випало.");
+      } else if (rand < 85) {
+        score += 2500;
+        alert("📦 Повернули 2,500 🧀!");
+      } else {
+        score += 7500;
+        alert("✨ СУПЕР ДЖЕКПОТ! Виграли 7,500 🧀!");
+      }
+      saveData(); updateUI();
+    }
+
     function openVipCase() {
       if (stars < 20) return alert("❌ Потрібно 20 ⭐!");
       stars -= 20;
@@ -232,7 +453,6 @@
       saveData(); updateUI();
     }
 
-    // 👑 ЕЛІТНА СКРИНЯ (35 ⭐) — Дроп 💍 Колечка та 🧸 Ведмедика
     function openEliteCase() {
       if (stars < 35) return alert("❌ Потрібно 35 ⭐!");
       stars -= 35;
@@ -254,7 +474,6 @@
       saveData(); updateUI();
     }
 
-    // 🌌 КОСМІЧНИЙ КЕЙС (50 ⭐) — Високий шанс на 💍 Колечко та 🧸 Ведмедика
     function openCosmicCase() {
       if (stars < 50) return alert("❌ Потрібно 50 ⭐!");
       stars -= 50;
@@ -276,7 +495,6 @@
       saveData(); updateUI();
     }
 
-    // 🎁 ПРЕМІУМ КЕЙС (100 ⭐)
     function openGiftCase() {
       if (stars < 100) return alert("❌ Потрібно 100 ⭐!");
       stars -= 100;
@@ -298,7 +516,6 @@
       saveData(); updateUI();
     }
 
-    // 🎲 ЗВИЧАЙНІ КЕЙСИ
     function openRiskCase(cost, currency, name) {
       if (currency === 'cheese' && score < cost) return alert("❌ Недостатньо Сиру!");
       if (currency === 'stars' && stars < cost) return alert("❌ Недостатньо Зірок!");
@@ -397,6 +614,7 @@
       localStorage.setItem('pt_score', score);
       localStorage.setItem('pt_stars', stars);
       localStorage.setItem('pt_taps', totalTaps);
+      localStorage.setItem('pt_power', tapPower);
       localStorage.setItem('pt_bears', bearsCount);
       localStorage.setItem('pt_rings', ringsCount);
       localStorage.setItem('pt_my_mice', JSON.stringify(myMice));
@@ -404,11 +622,20 @@
     }
 
     function updateUI() {
-      document.getElementById('score').innerText = score;
-      document.getElementById('starsScore').innerText = stars;
-      document.getElementById('totalTapsCnt').innerText = totalTaps;
+      document.getElementById('score').innerText = score.toLocaleString();
+      document.getElementById('starsScore').innerText = stars.toLocaleString();
+      document.getElementById('totalTapsCnt').innerText = totalTaps.toLocaleString();
       document.getElementById('myMiceList').innerText = myMice.join(', ') || "Немає";
       document.getElementById('inventoryContainer').innerText = `${bearsCount} 🧸 Ведмедиків, ${ringsCount} 💍 Колечок`;
+
+      const dailyBtn = document.getElementById('btn-daily-task');
+      if (taskDailyClaimed) { dailyBtn.innerText = "Виконано ✓"; dailyBtn.disabled = true; dailyBtn.style.opacity = "0.5"; }
+
+      const tgBtn = document.getElementById('btn-tg-task');
+      if (taskTgClaimed) { tgBtn.innerText = "Виконано ✓"; tgBtn.disabled = true; tgBtn.style.opacity = "0.5"; }
+
+      const tapBtn = document.getElementById('btn-tap-task');
+      if (taskTapClaimed) { tapBtn.innerText = "Виконано ✓"; tapBtn.disabled = true; tapBtn.style.opacity = "0.5"; }
 
       const auctionList = document.getElementById('auctionList');
       auctionList.innerHTML = "";
@@ -430,7 +657,10 @@
       btn.classList.add('active');
     }
 
-    updateUI();
+    window.addEventListener('DOMContentLoaded', () => {
+      checkAdminAccess();
+      updateUI();
+    });
   </script>
 </body>
 </html>
