@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>PetTap Game</title>
+  <title>PetTap Game & Auction</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { box-sizing: border-box; user-select: none; }
@@ -24,19 +24,22 @@
     .mouse-btn { font-size: 110px; transition: transform 0.05s; }
     .mouse-btn:active { transform: scale(0.85); }
 
-    /* Таблички мишей */
     .grid-list { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 10px; }
-    .card { background: #1c1d2e; border-radius: 14px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2a2c45; }
+    .card { background: #1c1d2e; border-radius: 14px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2a2c45; width: 100%; }
     .card-info { display: flex; align-items: center; gap: 10px; }
-    
-    /* Рідкісність */
+
     .badge-common { color: #aaa; font-weight: bold; }
     .badge-rare { color: #007aff; font-weight: bold; }
     .badge-epic { color: #a020f0; font-weight: bold; }
+    .badge-ultra { color: #00ffcc; font-weight: bold; }
     .badge-legend { color: #ff9900; font-weight: bold; }
 
     .btn-action { background: #007aff; border: none; color: white; padding: 8px 12px; font-weight: bold; border-radius: 8px; cursor: pointer; }
     .btn-stars { background: linear-gradient(90deg, #ffcc00, #ff9900); color: #000; }
+    .btn-green { background: #28a745; color: #fff; }
+    .btn-done { background: #444 !important; color: #888 !important; cursor: default; }
+
+    input { background: #0d0e17; border: 1px solid #2a2c45; color: #fff; padding: 10px; border-radius: 8px; width: 100%; margin-top: 5px; }
 
     .nav-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
@@ -62,100 +65,101 @@
     <div class="mouse-area" id="tapArea">
       <div class="mouse-btn" id="mouseEmoji">🐭</div>
       <div style="margin-top: 10px; color: #00ffcc; font-weight: bold;" id="currentMouseTitle">Звичайна Миша (x1)</div>
+      <div style="font-size: 12px; color: #aaa; margin-top: 5px;">Всього тапів: <span id="totalTapsCnt">0</span></div>
     </div>
   </div>
 
-  <!-- 2. ВЕЛИКИЙ МАГАЗИН МИШЕЙ -->
+  <!-- 2. МАГАЗИН МИШЕЙ -->
   <div id="page-shop" class="page">
-    <h3 style="color: #ffcc00; margin: 5px 0;">🐭 Магазин Унікальних Мишей</h3>
+    <h3 style="color: #ffcc00; margin: 5px 0;">🐭 Магазин Мишей</h3>
     <div class="grid-list">
       
-      <div class="card">
+      <!-- Новий рід: Ультра-Радікс -->
+      <div class="card" style="border: 1px solid #00ffcc;">
         <div class="card-info">
-          <div style="font-size: 30px;">⚙️🐭</div>
-          <div><b>Кібер-Миша (Lvl 1)</b><br><small class="badge-rare">Рідкісна | Тап x2</small></div>
+          <div style="font-size: 30px;">⚡🐭</div>
+          <div><b>Ультра-Радікс</b><br><small class="badge-ultra">Ультра-Рідкісна | Тап x15</small></div>
         </div>
-        <button class="btn-action" onclick="buyMouse('Кібер-Миша (Lvl 1)', 2, 2000, 'cheese')">2,000 🧀</button>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <button class="btn-action" onclick="buyMouse('Ультра-Радікс', 15, 100000, 'cheese')">100k 🧀</button>
+          <button class="btn-action btn-stars" onclick="buyMouse('Ультра-Радікс', 15, 10, 'stars')">10 ⭐</button>
+        </div>
       </div>
 
       <div class="card">
         <div class="card-info">
-          <div style="font-size: 30px;">🔥🐭</div>
-          <div><b>Вогняна Миша (Lvl 1)</b><br><small class="badge-epic">Епічна | Тап x5</small></div>
+          <div style="font-size: 30px;">⚙️🐭</div>
+          <div><b>Кібер-Миша</b><br><small class="badge-rare">Рідкісна | Тап x2</small></div>
         </div>
-        <button class="btn-action btn-stars" onclick="buyMouse('Вогняна Миша (Lvl 1)', 5, 25, 'stars')">25 ⭐</button>
+        <button class="btn-action" onclick="buyMouse('Кібер-Миша', 2, 2000, 'cheese')">2,000 🧀</button>
       </div>
 
       <div class="card">
         <div class="card-info">
           <div style="font-size: 30px;">👑🐭</div>
-          <div><b>Золота Миша-Король</b><br><small class="badge-legend">Легендарна | Тап x10</small></div>
+          <div><b>Міфічний Король</b><br><small class="badge-legend">Міфічна | Тап x25</small></div>
         </div>
-        <button class="btn-action btn-stars" onclick="buyMouse('Золота Миша-Король', 10, 100, 'stars')">100 ⭐</button>
+        <button class="btn-action btn-stars" onclick="buyMouse('Міфічний Король', 25, 100, 'stars')">100 ⭐</button>
       </div>
 
     </div>
   </div>
 
-  <!-- 3. РУЛЕТКА З ОДНОРАЗОВИМ МЕДВЕДИКОМ -->
-  <div id="page-roulette" class="page">
-    <h3 style="color: #ffcc00;">🎰 Рулетка Подарунків</h3>
-    <p style="font-size: 12px; color: #aaa;">Шанс випадання 🧸 Медведика (Макс. 1 раз на акаунт!)</p>
+  <!-- 3. P2P АУКЦІОН -->
+  <div id="page-auction" class="page">
+    <h3 style="color: #ffcc00;">🏷 Аукціон Мишей (P2P)</h3>
     
-    <div style="width: 100%; max-width: 320px; height: 120px; background: #1a1b2b; border: 2px solid #ffcc00; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 40px;" id="rouletteDisplay">
-      ❓
+    <!-- Виставити на аукціон -->
+    <div class="card" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+      <b>➕ Виставити свою мишу:</b>
+      <div style="font-size: 11px; color: #aaa;">Ціна встановиться функцією автоматично: Звичайні/Рідкісні за 🧀, а Легендарні/Міфічні/Ультра за <b>11 ⭐</b>!</div>
+      <button class="btn-action btn-green" style="width: 100%;" onclick="sellMyMouseOnAuction()">Виставити з Інвентарю</button>
     </div>
+
     <br>
-    <button class="btn-action btn-stars" style="width: 100%; max-width: 320px; padding: 12px;" onclick="spinRoulette()">Крутити за 10 ⭐</button>
-  </div>
-
-  <!-- 4. РЕАЛЬНІ ЗАВДАННЯ -->
-  <div id="page-tasks" class="page">
-    <h3 style="color: #00ffcc;">📋 Перевірка Завдань</h3>
-    <div class="grid-list">
-      
-      <div class="card">
-        <div class="card-info">
-          <div style="font-size: 28px;">📢</div>
-          <div><b>Підписка на ТГ Канал</b><br><small>Перевіряється автоматично</small></div>
-        </div>
-        <button class="btn-action btn-stars" onclick="checkTgTask()">+5 ⭐</button>
-      </div>
-
-      <div class="card">
-        <div class="card-info">
-          <div style="font-size: 28px;">👥</div>
-          <div><b>Запросити Друга за лінком</b><br><small>+5 ⭐ за кожного в боті</small></div>
-        </div>
-        <button class="btn-action btn-stars" onclick="shareRefLink()">Запросити</button>
-      </div>
-
+    <b>🛒 Доступні Лоти на Ринку:</b>
+    <div class="grid-list" id="auctionList" style="margin-top: 5px;">
+      <!-- Тут будуть з'являтися лоти -->
     </div>
   </div>
 
-  <!-- 5. НАДІСЛАТИ ПОДАРУНОК НА @Dantyjlo -->
-  <div id="page-gift" class="page">
-    <h3 style="color: #ff0055;">🎁 Надіслати Подарунок @Dantyjlo</h3>
-    <p style="font-size: 12px; text-align: center; color: #aaa;">Отримай купу монет та зірок у грі за реальний подарунок у Telegram!</p>
+  <!-- 4. КЕЙСИ & РУЛЕТКА -->
+  <div id="page-roulette" class="page">
+    <h3 style="color: #ffcc00;">🎁 Щоденний Кейс</h3>
+    <div class="card" style="flex-direction: column; text-align: center; gap: 10px;">
+      <b>📦 Щоденний Кейс Подарунків</b>
+      <button id="btnDailyCase" class="btn-action btn-stars" style="width: 100%;" onclick="openDailyCase()">Відкрити Безкоштовно</button>
+      <div id="caseTimer" style="font-size: 12px; color: #ff9900;"></div>
+    </div>
+  </div>
 
+  <!-- 5. ПРОФІЛЬ & ВИВЕДЕННЯ -->
+  <div id="page-profile" class="page">
+    <h3 style="color: #00ffcc;">👤 Профіль</h3>
     <div class="grid-list">
-      <div class="card" style="border: 1px solid #ff0055;">
-        <div class="card-info">
-          <div style="font-size: 30px;">🧸</div>
-          <div><b>Надіслати Медведя / Подарунок</b><br><small>Нагорода: +500 ⭐ & +100k 🧀</small></div>
-        </div>
-        <button class="btn-action btn-stars" onclick="sendRealGiftToAdmin()">🎁 Подарувати</button>
+      <div class="card" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+        <div><b>🎒 Мої миші:</b></div>
+        <div id="myMiceList" style="color: #00ffcc; font-weight: bold;">Звичайна Миша</div>
+      </div>
+      <div class="card" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+        <div><b>🧸 Інвентар:</b></div>
+        <div id="inventoryContainer" style="color: #ffcc00; font-weight: bold;">0 Ведмедиків</div>
+      </div>
+      <div class="card" style="flex-direction: column; align-items: flex-start; gap: 10px; border: 1px solid #ffcc00;">
+        <div style="color: #ffcc00; font-weight: bold;">💸 Виведення Нагороди (100⭐ + 1🧸)</div>
+        <input type="text" id="withdrawAddress" placeholder="Ваш Telegram @username">
+        <button class="btn-action btn-stars" style="width: 100%;" onclick="processWithdraw()">Вивести</button>
       </div>
     </div>
   </div>
 
-  <!-- МЕНЮ -->
+  <!-- НИЖНЄ МЕНЮ -->
   <div class="nav-bar">
     <button class="nav-item active" onclick="switchPage('tap', this)">🎮 Гра</button>
     <button class="nav-item" onclick="switchPage('shop', this)">🐭 Миші</button>
-    <button class="nav-item" onclick="switchPage('roulette', this)">🎰 Рулетка</button>
-    <button class="nav-item" onclick="switchPage('tasks', this)">📋 Завдання</button>
-    <button class="nav-item" onclick="switchPage('gift', this)">🎁 Подарунок</button>
+    <button class="nav-item" onclick="switchPage('auction', this)">🏷 Аукціон</button>
+    <button class="nav-item" onclick="switchPage('roulette', this)">🎁 Кейс</button>
+    <button class="nav-item" onclick="switchPage('profile', this)">👤 Профіль</button>
   </div>
 
   <script>
@@ -164,91 +168,118 @@
 
     let score = parseInt(localStorage.getItem('pt_score')) || 0;
     let stars = parseInt(localStorage.getItem('pt_stars')) || 10;
+    let totalTaps = parseInt(localStorage.getItem('pt_taps')) || 0;
     let tapPower = parseInt(localStorage.getItem('pt_power')) || 1;
-    let gotBear = localStorage.getItem('pt_got_bear') === 'true';
+    let bearsCount = parseInt(localStorage.getItem('pt_bears')) || 0;
+    let myMice = JSON.parse(localStorage.getItem('pt_my_mice') || '["Кібер-Миша"]');
+
+    // Лоти аукціону (початкові тестові гравці)
+    let auctionLots = JSON.parse(localStorage.getItem('pt_auction_lots')) || [
+      { id: 1, name: "Ультра-Радікс", power: 15, price: 11, currency: "stars", seller: "@Sanya_Player" },
+      { id: 2, name: "Кібер-Миша", power: 2, price: 1500, currency: "cheese", seller: "@Pro_Gamer" }
+    ];
 
     // Тапалка
     document.getElementById('tapArea').addEventListener('click', () => {
       score += tapPower;
+      totalTaps += 1;
+      if (totalTaps % 10000 === 0) stars += 1;
       saveData(); updateUI();
     });
 
-    // Покупка мишей
+    // Купівля в магазині
     function buyMouse(name, power, price, currency) {
-      if (currency === 'cheese' && score >= price) {
-        score -= price;
-      } else if (currency === 'stars' && stars >= price) {
-        stars -= price;
-      } else {
-        return alert("❌ Недостатньо коштів!");
-      }
+      if (currency === 'cheese' && score >= price) { score -= price; }
+      else if (currency === 'stars' && stars >= price) { stars -= price; }
+      else { return alert("❌ Недостатньо коштів!"); }
 
       tapPower = power;
-      localStorage.setItem('pt_power', tapPower);
-      document.getElementById('currentMouseTitle').innerText = `${name} (x${power})`;
-      alert(`🎉 Ви успішно придбали: ${name}! Потужність тапу: x${power}`);
+      if (!myMice.includes(name)) myMice.push(name);
+      alert(`🎉 Успішно куплено: ${name}!`);
       saveData(); updateUI();
     }
 
-    // Рулетка з обмеженням Медведя 1 раз
-    function spinRoulette() {
-      if (stars < 10) return alert("❌ Потрібно 10 ⭐ Зірок!");
-      stars -= 10;
+    // Автоматичне виставлення на аукціон
+    function sellMyMouseOnAuction() {
+      if (myMice.length === 0) return alert("❌ У вас немає мишей для продажу!");
 
-      const display = document.getElementById('rouletteDisplay');
-      display.innerText = "🌀";
+      const mouseToSell = myMice.pop(); // Беремо останню мишу
+      let price = 5000;
+      let currency = "cheese";
 
-      setTimeout(() => {
-        // Якщо Медвідь ще не випадав — є 10% шанс його вибити (1 раз)
-        if (!gotBear && Math.random() < 0.10) {
-          gotBear = true;
-          localStorage.setItem('pt_got_bear', 'true');
-          display.innerText = "🧸";
-          alert("🎉 НЕЙМОВІРНО! Вам випав 🧸 РІДКІСНИЙ МЕДВІДЬ! (Це ваш єдиний дроп Медведя)");
-        } else {
-          const winStars = Math.floor(Math.random() * 8) + 5; // 5..12 зірок
-          stars += winStars;
-          display.innerText = `${winStars} ⭐`;
-          alert(`Ви виграли ${winStars} ⭐ Зірок!`);
-        }
-        saveData(); updateUI();
-      }, 1500);
-    }
-
-    // Відправка подарунка на @Dantyjlo
-    function sendRealGiftToAdmin() {
-      if (confirm("Відкрити чат з @Dantyjlo для відправки подарунка?")) {
-        if (tg && tg.openTelegramLink) {
-          tg.openTelegramLink("https://t.me/Dantyjlo");
-        } else {
-          window.open("https://t.me/Dantyjlo", "_blank");
-        }
+      // Автопідбір ціни: Легендарні/Міфічні/Ультра виставляються чітко за 11 зірок
+      if (mouseToSell.includes("Ультра") || mouseToSell.includes("Король") || mouseToSell.includes("Міфічний")) {
+        price = 11;
+        currency = "stars";
       }
+
+      const newLot = {
+        id: Date.now(),
+        name: mouseToSell,
+        power: 10,
+        price: price,
+        currency: currency,
+        seller: "@Ви"
+      };
+
+      auctionLots.push(newLot);
+      alert(`🎉 Мишу "${mouseToSell}" виставлено на Аукціон за ${price} ${currency === 'stars' ? '⭐' : '🧀'}!`);
+      saveData(); updateUI();
     }
 
-    function shareRefLink() {
-      if (tg && tg.openTelegramLink) {
-        tg.openTelegramLink("https://t.me/share/url?url=Заходь%20у%20PetTap%20і%20отримуй%20бонуси!");
-      }
-    }
+    // Купівля на аукціоні
+    function buyAuctionLot(lotId) {
+      const index = auctionLots.findIndex(l => l.id === lotId);
+      if (index === -1) return;
 
-    function checkTgTask() {
-      alert("⏳ Перевірка підписки... Зачекайте 3 секунди.");
-      setTimeout(() => {
-        stars += 5;
-        alert("✅ Підписку підтверджено! Нараховано +5 ⭐!");
-        saveData(); updateUI();
-      }, 3000);
+      const lot = auctionLots[index];
+
+      if (lot.currency === 'cheese' && score >= lot.price) { score -= lot.price; }
+      else if (lot.currency === 'stars' && stars >= lot.price) { stars -= lot.price; }
+      else { return alert("❌ Недостатньо коштів для покупки цього лота!"); }
+
+      tapPower = lot.power;
+      myMice.push(lot.name);
+      auctionLots.splice(index, 1);
+
+      alert(`🎉 Ви успішно придбали ${lot.name} на аукціоні!`);
+      saveData(); updateUI();
     }
 
     function saveData() {
       localStorage.setItem('pt_score', score);
       localStorage.setItem('pt_stars', stars);
+      localStorage.setItem('pt_taps', totalTaps);
+      localStorage.setItem('pt_bears', bearsCount);
+      localStorage.setItem('pt_my_mice', JSON.stringify(myMice));
+      localStorage.setItem('pt_auction_lots', JSON.stringify(auctionLots));
     }
 
     function updateUI() {
       document.getElementById('score').innerText = score;
       document.getElementById('starsScore').innerText = stars;
+      document.getElementById('totalTapsCnt').innerText = totalTaps;
+      document.getElementById('myMiceList').innerText = myMice.join(', ') || "Немає";
+      document.getElementById('inventoryContainer').innerText = `${bearsCount} 🧸 Ведмедиків`;
+
+      // Оновлення списку аукціону
+      const auctionList = document.getElementById('auctionList');
+      auctionList.innerHTML = "";
+
+      auctionLots.forEach(lot => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-info">
+            <div style="font-size: 28px;">🏷🐭</div>
+            <div><b>${lot.name}</b><br><small style="color:#aaa;">Продавець: ${lot.seller}</small></div>
+          </div>
+          <button class="btn-action ${lot.currency === 'stars' ? 'btn-stars' : ''}" onclick="buyAuctionLot(${lot.id})">
+            ${lot.price} ${lot.currency === 'stars' ? '⭐' : '🧀'}
+          </button>
+        `;
+        auctionList.appendChild(card);
+      });
     }
 
     function switchPage(pageId, btn) {
