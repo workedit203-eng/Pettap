@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>PetTap Game & Fixed Cases</title>
+  <title>PetTap Game</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { box-sizing: border-box; user-select: none; }
@@ -177,7 +177,7 @@
   <div id="page-shop" class="page">
     <h3 style="color: #ffcc00; margin: 5px 0;">🐭 Магазин Мишей (11 видів)</h3>
     <div class="grid-list">
-      <div class="card"><div class="card-info"><div style="font-size: 30px;">⚙️🐭</div><div><b>Кібер-Миша</b><br><small class="badge-rare">Рідкісна | Тап x2</small></div></div><button class="btn-action" onclick="buyMouse('Кібер-Миша', 2, 2000, 'cheese')">2,000 🧀</button></div>
+      <div class="card"><div class="card-info"><div style="font-size: 30px;">⚙️️🐭</div><div><b>Кібер-Миша</b><br><small class="badge-rare">Рідкісна | Тап x2</small></div></div><button class="btn-action" onclick="buyMouse('Кібер-Миша', 2, 2000, 'cheese')">2,000 🧀</button></div>
       <div class="card"><div class="card-info"><div style="font-size: 30px;">⚔️🐭</div><div><b>Миша-Воїн</b><br><small class="badge-rare">Рідкісна | Тап x3</small></div></div><button class="btn-action" onclick="buyMouse('Миша-Воїн', 3, 5000, 'cheese')">5,000 🧀</button></div>
       <div class="card"><div class="card-info"><div style="font-size: 30px;">🧙‍♂️🐭</div><div><b>Миша-Маг</b><br><small class="badge-rare">Рідкісна | Тап x4</small></div></div><button class="btn-action" onclick="buyMouse('Миша-Маг', 4, 12000, 'cheese')">12,000 🧀</button></div>
       <div class="card"><div class="card-info"><div style="font-size: 30px;">🔥🐭</div><div><b>Вогняна Миша</b><br><small class="badge-epic">Епічна | Тап x6</small></div></div><button class="btn-action" onclick="buyMouse('Вогняна Миша', 6, 25000, 'cheese')">25,000 🧀</button></div>
@@ -280,7 +280,7 @@
         <ol style="padding-left: 18px; margin: 5px 0;">
           <li><b>Тапай на мишу:</b> Отримуй 🧀 Сир за кожен тап. Кожні 10,000 тапів дають +1 ⭐!</li>
           <li><b>Купуй мишей:</b> У Магазині доступні миші, які збільшують сили тапу від x2 до x200.</li>
-          <li><b>Відкривай кейси:</b> Випробовуй шанс вибити рідкісні 🧸 Ведмедики, 💍 Колечка або ⭐ Зірки (у Мідному кейсі шанс 15%, а в Срібному 2%).</li>
+          <li><b>Відкривай кейси:</b> Випробовуй шанс вибити рідкісні 🧸 Ведмедики, 💍 Колечка або ⭐ Зірки.</li>
           <li><b>Використовуй Аукціон:</b> Продавай свої миші іншим гравцям.</li>
         </ol>
       </div>
@@ -336,21 +336,36 @@
 
   <script>
     const MY_ADMIN_TELEGRAM_ID = 7814068068;
+    const MAX_LIMIT = Number.MAX_SAFE_INTEGER || 9007199254740991;
 
     const tg = window.Telegram?.WebApp;
     if (tg) tg.expand();
 
-    let score = parseInt(localStorage.getItem('pt_score')) || 0;
-    let stars = parseInt(localStorage.getItem('pt_stars')) || 10;
-    let totalTaps = parseInt(localStorage.getItem('pt_taps')) || 0;
-    let tapPower = parseInt(localStorage.getItem('pt_power')) || 1;
-    let bearsCount = parseInt(localStorage.getItem('pt_bears')) || 0;
-    let ringsCount = parseInt(localStorage.getItem('pt_rings')) || 0;
-    let myMice = JSON.parse(localStorage.getItem('pt_my_mice') || '["Звичайна Миша"]');
+    // Отримуємо унікальний ID користувача для ізоляції збережень
+    function getTgUserId() {
+      return window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'guest_user';
+    }
 
-    let taskDailyClaimed = localStorage.getItem('pt_task_daily') === 'true';
-    let taskTgClaimed = localStorage.getItem('pt_task_tg') === 'true';
-    let taskTapClaimed = localStorage.getItem('pt_task_tap') === 'true';
+    const USER_KEY_PREFIX = `pt_${getTgUserId()}_`;
+
+    function safeNum(val, defaultVal = 0) {
+      let parsed = parseInt(val, 10);
+      if (isNaN(parsed) || !isFinite(parsed) || parsed < 0) return defaultVal;
+      return Math.min(parsed, MAX_LIMIT);
+    }
+
+    // Для нових користувачів значення ЗАВЖДИ 0 за замовчуванням
+    let score = safeNum(localStorage.getItem(USER_KEY_PREFIX + 'score'), 0);
+    let stars = safeNum(localStorage.getItem(USER_KEY_PREFIX + 'stars'), 0);
+    let totalTaps = safeNum(localStorage.getItem(USER_KEY_PREFIX + 'taps'), 0);
+    let tapPower = safeNum(localStorage.getItem(USER_KEY_PREFIX + 'power'), 1);
+    let bearsCount = safeNum(localStorage.getItem(USER_KEY_PREFIX + 'bears'), 0);
+    let ringsCount = safeNum(localStorage.getItem(USER_KEY_PREFIX + 'rings'), 0);
+    let myMice = JSON.parse(localStorage.getItem(USER_KEY_PREFIX + 'my_mice') || '["Звичайна Миша"]');
+
+    let taskDailyClaimed = localStorage.getItem(USER_KEY_PREFIX + 'task_daily') === 'true';
+    let taskTgClaimed = localStorage.getItem(USER_KEY_PREFIX + 'task_tg') === 'true';
+    let taskTapClaimed = localStorage.getItem(USER_KEY_PREFIX + 'task_tap') === 'true';
 
     const shopPrices = {
       "Кібер-Миша": { price: 2000, currency: "cheese", power: 2 },
@@ -368,13 +383,8 @@
 
     let auctionLots = JSON.parse(localStorage.getItem('pt_auction_lots')) || [];
 
-    function getTgUserId() {
-      return window.Telegram?.WebApp?.initDataUnsafe?.user?.id || null;
-    }
-
     function isAdmin() {
-      const currentId = getTgUserId();
-      return currentId === MY_ADMIN_TELEGRAM_ID;
+      return getTgUserId() == MY_ADMIN_TELEGRAM_ID;
     }
 
     function checkAdminAccess() {
@@ -390,11 +400,11 @@
 
     function grantAdminUnlimited() {
       if (!isAdmin()) return;
-      score = 999999999;
-      stars = 999999;
+      score = 10000000;
+      stars = 100000;
       tapPower = 200;
-      bearsCount += 99;
-      ringsCount += 99;
+      bearsCount = safeNum(bearsCount + 99);
+      ringsCount = safeNum(ringsCount + 99);
       
       const allMice = Object.keys(shopPrices);
       allMice.forEach(m => {
@@ -403,13 +413,13 @@
 
       saveData();
       updateUI();
-      alert("🚀 Безлімітний режим увімкнено! Усі ресурси та миші отримано.");
+      alert("🚀 Безлімітний режим увімкнено для адміністратора!");
     }
 
     function addAdminCheese() {
       if (!isAdmin()) return;
-      const val = parseInt(document.getElementById('admin-cheese-input').value) || 0;
-      score += val;
+      const val = safeNum(document.getElementById('admin-cheese-input').value, 0);
+      score = safeNum(score + val);
       saveData();
       updateUI();
       alert(`Додано ${val} 🧀!`);
@@ -417,8 +427,8 @@
 
     function addAdminStars() {
       if (!isAdmin()) return;
-      const val = parseInt(document.getElementById('admin-stars-input').value) || 0;
-      stars += val;
+      const val = safeNum(document.getElementById('admin-stars-input').value, 0);
+      stars = safeNum(stars + val);
       saveData();
       updateUI();
       alert(`Додано ${val} ⭐!`);
@@ -426,8 +436,8 @@
 
     function addAdminItem(type) {
       if (!isAdmin()) return;
-      if (type === 'bear') bearsCount += 1;
-      if (type === 'ring') ringsCount += 1;
+      if (type === 'bear') bearsCount = safeNum(bearsCount + 1);
+      if (type === 'ring') ringsCount = safeNum(ringsCount + 1);
       saveData();
       updateUI();
       alert("Предмет додано в інвентар!");
@@ -435,9 +445,9 @@
 
     function claimDailyReward() {
       if (taskDailyClaimed) return alert("❌ Ви вже забрали сьогоднішню нагороду!");
-      score += 500;
+      score = safeNum(score + 500);
       taskDailyClaimed = true;
-      localStorage.setItem('pt_task_daily', 'true');
+      localStorage.setItem(USER_KEY_PREFIX + 'task_daily', 'true');
       alert("🎉 Отримано +500 🧀 за щоденний вхід!");
       saveData(); updateUI();
     }
@@ -445,45 +455,45 @@
     function completeTelegramTask() {
       if (taskTgClaimed) return alert("❌ Ви вже виконали це завдання!");
       window.open('https://t.me/pettap', '_blank');
-      stars += 5;
+      stars = safeNum(stars + 5);
       taskTgClaimed = true;
-      localStorage.setItem('pt_task_tg', 'true');
-      alert("🎉 Дякуємо за підписку на @pettap! Отримано +5 ⭐!");
+      localStorage.setItem(USER_KEY_PREFIX + 'task_tg', 'true');
+      alert("🎉 Дякуємо за підписку! Отримано +5 ⭐!");
       saveData(); updateUI();
     }
 
     function claimTapReward() {
       if (taskTapClaimed) return alert("❌ Завдання вже виконане!");
       if (totalTaps < 1000) return alert(`❌ Потрібно 1,000 тапів (у вас: ${totalTaps})`);
-      score += 1000;
+      score = safeNum(score + 1000);
       taskTapClaimed = true;
-      localStorage.setItem('pt_task_tap', 'true');
+      localStorage.setItem(USER_KEY_PREFIX + 'task_tap', 'true');
       alert("🎉 Вітаємо! +1,000 🧀 додано!");
       saveData(); updateUI();
     }
 
     document.getElementById('tapArea').addEventListener('click', () => {
-      score += tapPower;
-      totalTaps += 1;
-      if (totalTaps % 10000 === 0) stars += 1;
+      score = safeNum(score + tapPower);
+      totalTaps = safeNum(totalTaps + 1);
+      if (totalTaps % 10000 === 0) stars = safeNum(stars + 1);
       saveData(); updateUI();
     });
 
     function openCopperCase() {
       if (score < 500) return alert("❌ Недостатньо 🧀 (потрібно 500)!");
-      score -= 500;
+      score = safeNum(score - 500);
 
       const rand = Math.random() * 100;
       if (rand < 15) {
-        stars += 1;
+        stars = safeNum(stars + 1);
         alert("🌟 ВАУ! З Мідного кейсу випала 1 ⭐!");
       } else if (rand < 55) {
         alert("💨 Нічого не випало.");
       } else if (rand < 85) {
-        score += 500;
+        score = safeNum(score + 500);
         alert("📦 Повернули 500 🧀!");
       } else {
-        score += 1500;
+        score = safeNum(score + 1500);
         alert("✨ ДЖЕКПОТ! Виграли 1,500 🧀!");
       }
       saveData(); updateUI();
@@ -491,19 +501,19 @@
 
     function openSilverCase() {
       if (score < 2500) return alert("❌ Недостатньо 🧀 (потрібно 2,500)!");
-      score -= 2500;
+      score = safeNum(score - 2500);
 
       const rand = Math.random() * 100;
       if (rand < 2) {
-        stars += 1;
+        stars = safeNum(stars + 1);
         alert("🌟 РІДКІСТЬ! З Срібного кейсу випала 1 ⭐!");
       } else if (rand < 50) {
         alert("💨 Нічого не випало.");
       } else if (rand < 85) {
-        score += 2500;
+        score = safeNum(score + 2500);
         alert("📦 Повернули 2,500 🧀!");
       } else {
-        score += 7500;
+        score = safeNum(score + 7500);
         alert("✨ СУПЕР ДЖЕКПОТ! Виграли 7,500 🧀!");
       }
       saveData(); updateUI();
@@ -511,20 +521,20 @@
 
     function openVipCase() {
       if (stars < 20) return alert("❌ Потрібно 20 ⭐!");
-      stars -= 20;
+      stars = safeNum(stars - 20);
 
       const rand = Math.random() * 100;
       if (rand < 5) {
-        bearsCount += 1;
+        bearsCount = safeNum(bearsCount + 1);
         alert("🎉 ВАУ! З VIP Кейсу вибив рідкісний 🧸 Ведмедик!");
       } else if (rand < 60) {
         alert("💨 Нічого не випало.");
       } else if (rand < 90) {
-        stars += 20;
+        stars = safeNum(stars + 20);
         alert("📦 Повернули 20 ⭐!");
       } else {
         const bonus = Math.floor(Math.random() * 3) + 1;
-        stars += (20 + bonus);
+        stars = safeNum(stars + 20 + bonus);
         alert(`✨ Виграли ${20 + bonus} ⭐ (+${bonus} ⭐)!`);
       }
       saveData(); updateUI();
@@ -532,20 +542,20 @@
 
     function openEliteCase() {
       if (stars < 35) return alert("❌ Потрібно 35 ⭐!");
-      stars -= 35;
+      stars = safeNum(stars - 35);
 
       const rand = Math.random() * 100;
       if (rand < 15) {
-        ringsCount += 1;
+        ringsCount = safeNum(ringsCount + 1);
         alert("✨ УРА! З Елітної скрині випало 💍 Смарагдове Колечко!");
       } else if (rand < 25) {
-        bearsCount += 1;
+        bearsCount = safeNum(bearsCount + 1);
         alert("🎉 ЧУДОВО! З Елітної скрині випав 🧸 Ведмедик!");
       } else if (rand < 70) {
         alert("💨 Скриня виявилась порожньою.");
       } else {
         const bonus = Math.floor(Math.random() * 3) + 1;
-        stars += (35 + bonus);
+        stars = safeNum(stars + 35 + bonus);
         alert(`📦 Виграли ${35 + bonus} ⭐!`);
       }
       saveData(); updateUI();
@@ -553,20 +563,20 @@
 
     function openCosmicCase() {
       if (stars < 50) return alert("❌ Потрібно 50 ⭐!");
-      stars -= 50;
+      stars = safeNum(stars - 50);
 
       const rand = Math.random() * 100;
       if (rand < 20) {
-        ringsCount += 1;
+        ringsCount = safeNum(ringsCount + 1);
         alert("🌌 СУПЕР! З Космічного кейсу випало 💍 Колечко!");
       } else if (rand < 35) {
-        bearsCount += 1;
+        bearsCount = safeNum(bearsCount + 1);
         alert("🌌 ЛЕГЕНДАРНО! Випав 🧸 Ведмедик!");
       } else if (rand < 75) {
         alert("💨 Нічого не випало.");
       } else {
         const bonus = Math.floor(Math.random() * 3) + 1;
-        stars += (50 + bonus);
+        stars = safeNum(stars + 50 + bonus);
         alert(`⭐ Повернуто ${50 + bonus} ⭐!`);
       }
       saveData(); updateUI();
@@ -574,20 +584,20 @@
 
     function openGiftCase() {
       if (stars < 100) return alert("❌ Потрібно 100 ⭐!");
-      stars -= 100;
+      stars = safeNum(stars - 100);
 
       const rand = Math.random() * 100;
       if (rand < 65) {
         alert("💨 Кейс порожній.");
       } else if (rand < 85) {
         const bonus = Math.floor(Math.random() * 3) + 1;
-        stars += (100 + bonus);
+        stars = safeNum(stars + 100 + bonus);
         alert(`✨ Виграли ${100 + bonus} ⭐!`);
       } else if (rand < 95) {
-        bearsCount += 1;
+        bearsCount = safeNum(bearsCount + 1);
         alert("🎉 Вам випав 🧸 Ведмедик!");
       } else {
-        ringsCount += 1;
+        ringsCount = safeNum(ringsCount + 1);
         alert("✨ Вам випало 💍 Колечко!");
       }
       saveData(); updateUI();
@@ -597,8 +607,8 @@
       if (currency === 'cheese' && score < cost) return alert("❌ Недостатньо Сиру!");
       if (currency === 'stars' && stars < cost) return alert("❌ Недостатньо Зірок!");
 
-      if (currency === 'cheese') score -= cost;
-      else stars -= cost;
+      if (currency === 'cheese') score = safeNum(score - cost);
+      else stars = safeNum(stars - cost);
 
       const rand = Math.random() * 100;
       let winAmount = 0;
@@ -612,8 +622,8 @@
         winAmount = cost + bonus;
       }
 
-      if (currency === 'cheese') score += winAmount;
-      else stars += winAmount;
+      if (currency === 'cheese') score = safeNum(score + winAmount);
+      else stars = safeNum(stars + winAmount);
 
       if (winAmount === 0) {
         alert(`💨 З кейсу "${name}" ви нічого не виграли!`);
@@ -624,8 +634,8 @@
     }
 
     function buyMouse(name, power, price, currency) {
-      if (currency === 'cheese' && score >= price) { score -= price; }
-      else if (currency === 'stars' && stars >= price) { stars -= price; }
+      if (currency === 'cheese' && score >= price) { score = safeNum(score - price); }
+      else if (currency === 'stars' && stars >= price) { stars = safeNum(stars - price); }
       else { return alert("❌ Недостатньо коштів!"); }
 
       tapPower = power;
@@ -645,7 +655,7 @@
         power: mouseData.power,
         price: mouseData.price,
         currency: mouseData.currency,
-        seller: "@Ви"
+        seller: "@Гравець"
       });
 
       alert(`🎉 Виставили "${mouseToSell}" на Аукціон!`);
@@ -657,8 +667,8 @@
       if (index === -1) return;
       const lot = auctionLots[index];
 
-      if (lot.currency === 'cheese' && score >= lot.price) { score -= lot.price; }
-      else if (lot.currency === 'stars' && stars >= lot.price) { stars -= lot.price; }
+      if (lot.currency === 'cheese' && score >= lot.price) { score = safeNum(score - lot.price); }
+      else if (lot.currency === 'stars' && stars >= lot.price) { stars = safeNum(stars - lot.price); }
       else { return alert("❌ Недостатньо коштів!"); }
 
       tapPower = lot.power;
@@ -673,8 +683,8 @@
       if (!username) return alert("❌ Введіть ваш Telegram @username!");
       if (stars < 100 || bearsCount < 1) return alert("❌ Потрібно 100 ⭐ та 1 🧸!");
 
-      stars -= 100;
-      bearsCount -= 1;
+      stars = safeNum(stars - 100);
+      bearsCount = safeNum(bearsCount - 1);
       saveData(); updateUI();
 
       const msgText = `📩 ЗАЯВКА НА ВИВЕДЕННЯ!\nЮзер: ${username}\nХоче вивести: 100 ⭐ та 1 🧸 Ведмедика.`;
@@ -688,25 +698,25 @@
     }
 
     function saveData() {
-      localStorage.setItem('pt_score', score);
-      localStorage.setItem('pt_stars', stars);
-      localStorage.setItem('pt_taps', totalTaps);
-      localStorage.setItem('pt_power', tapPower);
-      localStorage.setItem('pt_bears', bearsCount);
-      localStorage.setItem('pt_rings', ringsCount);
-      localStorage.setItem('pt_my_mice', JSON.stringify(myMice));
+      localStorage.setItem(USER_KEY_PREFIX + 'score', score);
+      localStorage.setItem(USER_KEY_PREFIX + 'stars', stars);
+      localStorage.setItem(USER_KEY_PREFIX + 'taps', totalTaps);
+      localStorage.setItem(USER_KEY_PREFIX + 'power', tapPower);
+      localStorage.setItem(USER_KEY_PREFIX + 'bears', bearsCount);
+      localStorage.setItem(USER_KEY_PREFIX + 'rings', ringsCount);
+      localStorage.setItem(USER_KEY_PREFIX + 'my_mice', JSON.stringify(myMice));
       localStorage.setItem('pt_auction_lots', JSON.stringify(auctionLots));
     }
 
     function updateUI() {
-      document.getElementById('score').innerText = score.toLocaleString();
-      document.getElementById('starsScore').innerText = stars.toLocaleString();
-      document.getElementById('totalTapsCnt').innerText = totalTaps.toLocaleString();
+      document.getElementById('score').innerText = safeNum(score).toLocaleString();
+      document.getElementById('starsScore').innerText = safeNum(stars).toLocaleString();
+      document.getElementById('totalTapsCnt').innerText = safeNum(totalTaps).toLocaleString();
       document.getElementById('myMiceList').innerText = myMice.join(', ') || "Немає";
-      document.getElementById('inventoryContainer').innerText = `${bearsCount} 🧸 Ведмедиків, ${ringsCount} 💍 Колечок`;
+      document.getElementById('inventoryContainer').innerText = `${safeNum(bearsCount)} 🧸 Ведмедиків, ${safeNum(ringsCount)} 💍 Колечок`;
 
-      document.getElementById('topMyTaps').innerText = totalTaps.toLocaleString();
-      document.getElementById('topMyStars').innerText = stars.toLocaleString();
+      document.getElementById('topMyTaps').innerText = safeNum(totalTaps).toLocaleString();
+      document.getElementById('topMyStars').innerText = safeNum(stars).toLocaleString();
 
       const dailyBtn = document.getElementById('btn-daily-task');
       if (taskDailyClaimed) { dailyBtn.innerText = "Виконано ✓"; dailyBtn.disabled = true; dailyBtn.style.opacity = "0.5"; }
