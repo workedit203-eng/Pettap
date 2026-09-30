@@ -42,7 +42,7 @@
 
     .nav-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
-      display: flex; justify-content: space-around; background: #0d0e17; padding: 10px 0;
+      display: flex; justify-content: space-around; background: #0d0e17; padding: 8px 0;
       border-top: 1px solid #1c1d2e; z-index: 100;
     }
     .nav-item { color: #8e8e93; font-size: 10px; border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
@@ -57,6 +57,30 @@
     #admin-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.85); z-index: 10000; padding: 20px; box-sizing: border-box;
+    }
+
+    .warning-box {
+      background: rgba(255, 0, 85, 0.15);
+      border: 1px solid #ff0055;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 12px;
+      color: #ff99aa;
+      line-height: 1.4;
+      margin-top: 8px;
+    }
+
+    .guide-box {
+      background: #1c1d2e;
+      border: 1px solid #2a2c45;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      color: #ddd;
+      line-height: 1.5;
+      width: 100%;
+      max-width: 360px;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -81,7 +105,45 @@
     </div>
   </div>
 
-  <!-- 2. ЗАВДАННЯ -->
+  <!-- 2. ТОП ГРАВЦІВ -->
+  <div id="page-leaderboard" class="page">
+    <h3 style="color: #ffcc00; margin: 5px 0;">🏆 Топ Гравців PetTap</h3>
+    <div class="grid-list">
+      <div class="card" style="border: 1px solid #ffcc00;">
+        <div class="card-info">
+          <div style="font-size: 26px;">🥇</div>
+          <div><b>@alex_crypto</b><br><small style="color:#aaa;">Тапів: 1,450,000</small></div>
+        </div>
+        <div style="color:#ffcc00; font-weight:bold;">120 ⭐</div>
+      </div>
+      <div class="card" style="border: 1px solid #c0c0c0;">
+        <div class="card-info">
+          <div style="font-size: 26px;">🥈</div>
+          <div><b>@dark_knight</b><br><small style="color:#aaa;">Тапів: 980,000</small></div>
+        </div>
+        <div style="color:#ffcc00; font-weight:bold;">85 ⭐</div>
+      </div>
+      <div class="card" style="border: 1px solid #cd7f32;">
+        <div class="card-info">
+          <div style="font-size: 26px;">🥉</div>
+          <div><b>@cheese_master</b><br><small style="color:#aaa;">Тапів: 620,000</small></div>
+        </div>
+        <div style="color:#ffcc00; font-weight:bold;">45 ⭐</div>
+      </div>
+
+      <hr style="border-color: #2a2c45; width: 100%; margin: 10px 0;">
+      
+      <div class="card" style="border: 1px solid #00ffcc;">
+        <div class="card-info">
+          <div style="font-size: 26px;">👤</div>
+          <div><b>Ви (Ваш результат)</b><br><small style="color:#aaa;">Тапів: <span id="topMyTaps">0</span></small></div>
+        </div>
+        <div style="color:#00ffcc; font-weight:bold;"><span id="topMyStars">0</span> ⭐</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ЗАВДАННЯ -->
   <div id="page-tasks" class="page">
     <h3 style="color: #ffcc00; margin: 5px 0;">📋 Завдання та Нагороди</h3>
     <div class="grid-list">
@@ -96,7 +158,7 @@
       <div class="card">
         <div class="card-info">
           <div style="font-size: 30px;">📢</div>
-          <div><b>Підписка на Telegram</b><br><small style="color:#aaa;">Будь у курсі новин</small></div>
+          <div><b>Підписка на Telegram</b><br><small style="color:#aaa;">Канал Pet Tap</small></div>
         </div>
         <button id="btn-tg-task" class="btn-action btn-stars" onclick="completeTelegramTask()">+5 ⭐</button>
       </div>
@@ -111,12 +173,12 @@
     </div>
   </div>
 
-  <!-- 3. МАГАЗИН МИШЕЙ -->
+  <!-- 4. МАГАЗИН МИШЕЙ -->
   <div id="page-shop" class="page">
     <h3 style="color: #ffcc00; margin: 5px 0;">🐭 Магазин Мишей (11 видів)</h3>
     <div class="grid-list">
       <div class="card"><div class="card-info"><div style="font-size: 30px;">⚙️🐭</div><div><b>Кібер-Миша</b><br><small class="badge-rare">Рідкісна | Тап x2</small></div></div><button class="btn-action" onclick="buyMouse('Кібер-Миша', 2, 2000, 'cheese')">2,000 🧀</button></div>
-      <div class="card"><div class="card-info"><div style="font-size: 30px;">⚔️️🐭</div><div><b>Миша-Воїн</b><br><small class="badge-rare">Рідкісна | Тап x3</small></div></div><button class="btn-action" onclick="buyMouse('Миша-Воїн', 3, 5000, 'cheese')">5,000 🧀</button></div>
+      <div class="card"><div class="card-info"><div style="font-size: 30px;">⚔️🐭</div><div><b>Миша-Воїн</b><br><small class="badge-rare">Рідкісна | Тап x3</small></div></div><button class="btn-action" onclick="buyMouse('Миша-Воїн', 3, 5000, 'cheese')">5,000 🧀</button></div>
       <div class="card"><div class="card-info"><div style="font-size: 30px;">🧙‍♂️🐭</div><div><b>Миша-Маг</b><br><small class="badge-rare">Рідкісна | Тап x4</small></div></div><button class="btn-action" onclick="buyMouse('Миша-Маг', 4, 12000, 'cheese')">12,000 🧀</button></div>
       <div class="card"><div class="card-info"><div style="font-size: 30px;">🔥🐭</div><div><b>Вогняна Миша</b><br><small class="badge-epic">Епічна | Тап x6</small></div></div><button class="btn-action" onclick="buyMouse('Вогняна Миша', 6, 25000, 'cheese')">25,000 🧀</button></div>
       <div class="card"><div class="card-info"><div style="font-size: 30px;">❄️🐭</div><div><b>Крижана Миша</b><br><small class="badge-epic">Епічна | Тап x8</small></div></div><button class="btn-action" onclick="buyMouse('Крижана Миша', 8, 50000, 'cheese')">50,000 🧀</button></div>
@@ -129,7 +191,7 @@
     </div>
   </div>
 
-  <!-- 4. КЕЙСИ С ЗІРКАМИ Й ПРЕДМЕТАМИ -->
+  <!-- 5. КЕЙСИ С ЗІРКАМИ Й ПРЕДМЕТАМИ -->
   <div id="page-roulette" class="page">
     <h3 style="color: #ffcc00; margin: 5px 0;">📦 Скрині й Дроп</h3>
     <div class="grid-list">
@@ -176,7 +238,7 @@
     </div>
   </div>
 
-  <!-- 5. АУКЦІОН -->
+  <!-- 6. АУКЦІОН -->
   <div id="page-auction" class="page">
     <h3 style="color: #ffcc00;">🏷 Аукціон Мишей (P2P)</h3>
     <div class="card" style="flex-direction: column; align-items: flex-start; gap: 8px;">
@@ -188,9 +250,9 @@
     <div class="grid-list" id="auctionList" style="margin-top: 5px;"></div>
   </div>
 
-  <!-- 6. ПРОФІЛЬ -->
+  <!-- 7. ПРОФІЛЬ ТА ВИВЕДЕННЯ -->
   <div id="page-profile" class="page">
-    <h3 style="color: #00ffcc;">👤 Профіль</h3>
+    <h3 style="color: #00ffcc;">👤 Профіль & Виведення</h3>
     <div class="grid-list">
       <div class="card" style="flex-direction: column; align-items: flex-start; gap: 5px;">
         <div><b>🎒 Мої миші:</b></div>
@@ -204,6 +266,23 @@
         <div style="color: #ffcc00; font-weight: bold;">💸 Виведення Нагороди (100⭐ + 1🧸)</div>
         <input type="text" id="withdrawAddress" placeholder="Ваш Telegram @username">
         <button class="btn-action btn-stars" style="width: 100%;" onclick="processWithdraw()">Запросити виведення</button>
+        
+        <div class="warning-box">
+          ⚠️ <b>Увага:</b> Запити на виведення обробляються власником вручну (від <b>10 годин до 1 місяця</b>). Запит може бути відхилено, якщо в фонді бота буде недостатньо зірок.
+        </div>
+      </div>
+
+      <!-- ІНСТРУКЦІЯ ТА ПРО БОТА -->
+      <div class="guide-box">
+        <h4 style="color: #ffcc00; margin: 0 0 8px 0;">📖 Про бота та Інструкція:</h4>
+        <b>PetTap</b> — це інтерактивна гра-тапалка в Telegram з можливістю заробляти ресурси, купувати рідкісних мишей та випробовувати удачу в кейсах!<br><br>
+        <b>Як грати:</b>
+        <ol style="padding-left: 18px; margin: 5px 0;">
+          <li><b>Тапай на мишу:</b> Отримуй 🧀 Сир за кожен тап. Кожні 10,000 тапів дають +1 ⭐!</li>
+          <li><b>Купуй мишей:</b> У Магазині доступні миші, які збільшують сили тапу від x2 до x200.</li>
+          <li><b>Відкривай кейси:</b> Випробовуй шанс вибити рідкісні 🧸 Ведмедики, 💍 Колечка або ⭐ Зірки (у Мідному кейсі шанс 15%, а в Срібному 2%).</li>
+          <li><b>Використовуй Аукціон:</b> Продавай свої миші іншим гравцям.</li>
+        </ol>
       </div>
     </div>
   </div>
@@ -247,6 +326,7 @@
 
   <div class="nav-bar">
     <button class="nav-item active" onclick="switchPage('tap', this)">🎮 Гра</button>
+    <button class="nav-item" onclick="switchPage('leaderboard', this)">🏆 Топ</button>
     <button class="nav-item" onclick="switchPage('tasks', this)">📋 Завдання</button>
     <button class="nav-item" onclick="switchPage('shop', this)">🐭 Миші</button>
     <button class="nav-item" onclick="switchPage('roulette', this)">🎁 Кейси</button>
@@ -255,7 +335,6 @@
   </div>
 
   <script>
-    // ⚠️ ВСТАНОВЛЕНО ВАШ TELEGRAM ID:
     const MY_ADMIN_TELEGRAM_ID = 7814068068;
 
     const tg = window.Telegram?.WebApp;
@@ -365,11 +444,11 @@
 
     function completeTelegramTask() {
       if (taskTgClaimed) return alert("❌ Ви вже виконали це завдання!");
-      window.open('https://t.me/telegram', '_blank');
+      window.open('https://t.me/pettap', '_blank');
       stars += 5;
       taskTgClaimed = true;
       localStorage.setItem('pt_task_tg', 'true');
-      alert("🎉 Дякуємо за підписку! Отримано +5 ⭐!");
+      alert("🎉 Дякуємо за підписку на @pettap! Отримано +5 ⭐!");
       saveData(); updateUI();
     }
 
@@ -390,13 +469,12 @@
       saveData(); updateUI();
     });
 
-    // Мідний кейс (15% шанс на 1 ⭐)
     function openCopperCase() {
       if (score < 500) return alert("❌ Недостатньо 🧀 (потрібно 500)!");
       score -= 500;
 
       const rand = Math.random() * 100;
-      if (rand < 15) { // 15% ШАНС НА ЗІРКУ
+      if (rand < 15) {
         stars += 1;
         alert("🌟 ВАУ! З Мідного кейсу випала 1 ⭐!");
       } else if (rand < 55) {
@@ -411,13 +489,12 @@
       saveData(); updateUI();
     }
 
-    // Срібний кейс (2% шанс на 1 ⭐)
     function openSilverCase() {
       if (score < 2500) return alert("❌ Недостатньо 🧀 (потрібно 2,500)!");
       score -= 2500;
 
       const rand = Math.random() * 100;
-      if (rand < 2) { // 2% ШАНС НА ЗІРКУ
+      if (rand < 2) {
         stars += 1;
         alert("🌟 РІДКІСТЬ! З Срібного кейсу випала 1 ⭐!");
       } else if (rand < 50) {
@@ -606,7 +683,7 @@
         tg.sendData(JSON.stringify({ action: "withdraw", username, amount_stars: 100, amount_bears: 1 }));
       }
 
-      alert(`✅ Заявка створена для ${username}!`);
+      alert(`✅ Заявка створена для ${username}!\nЗаявка розглядається від 10 годин до 1 місяця.`);
       window.open(`https://t.me/share/url?url=${encodeURIComponent(msgText)}`, '_blank');
     }
 
@@ -627,6 +704,9 @@
       document.getElementById('totalTapsCnt').innerText = totalTaps.toLocaleString();
       document.getElementById('myMiceList').innerText = myMice.join(', ') || "Немає";
       document.getElementById('inventoryContainer').innerText = `${bearsCount} 🧸 Ведмедиків, ${ringsCount} 💍 Колечок`;
+
+      document.getElementById('topMyTaps').innerText = totalTaps.toLocaleString();
+      document.getElementById('topMyStars').innerText = stars.toLocaleString();
 
       const dailyBtn = document.getElementById('btn-daily-task');
       if (taskDailyClaimed) { dailyBtn.innerText = "Виконано ✓"; dailyBtn.disabled = true; dailyBtn.style.opacity = "0.5"; }
