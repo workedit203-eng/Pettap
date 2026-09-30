@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>PetTap Game & Auction</title>
+  <title>PetTap Game & Cases</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { box-sizing: border-box; user-select: none; }
@@ -28,16 +28,15 @@
     .card { background: #1c1d2e; border-radius: 14px; padding: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2a2c45; width: 100%; }
     .card-info { display: flex; align-items: center; gap: 10px; }
 
-    .badge-common { color: #aaa; font-weight: bold; }
     .badge-rare { color: #007aff; font-weight: bold; }
     .badge-epic { color: #a020f0; font-weight: bold; }
     .badge-ultra { color: #00ffcc; font-weight: bold; }
-    .badge-legend { color: #ff9900; font-weight: bold; }
+    .badge-legend { color: #ffcc00; font-weight: bold; }
+    .badge-mythic { color: #ff0055; font-weight: bold; }
 
     .btn-action { background: #007aff; border: none; color: white; padding: 8px 12px; font-weight: bold; border-radius: 8px; cursor: pointer; }
     .btn-stars { background: linear-gradient(90deg, #ffcc00, #ff9900); color: #000; }
     .btn-green { background: #28a745; color: #fff; }
-    .btn-done { background: #444 !important; color: #888 !important; cursor: default; }
 
     input { background: #0d0e17; border: 1px solid #2a2c45; color: #fff; padding: 10px; border-radius: 8px; width: 100%; margin-top: 5px; }
 
@@ -66,74 +65,105 @@
       <div class="mouse-btn" id="mouseEmoji">🐭</div>
       <div style="margin-top: 10px; color: #00ffcc; font-weight: bold;" id="currentMouseTitle">Звичайна Миша (x1)</div>
       <div style="font-size: 12px; color: #aaa; margin-top: 5px;">Всього тапів: <span id="totalTapsCnt">0</span></div>
+      <div style="font-size: 11px; color: #ffcc00; margin-top: 2px;">(+1 ⭐ за кожні 10,000 тапів)</div>
     </div>
   </div>
 
-  <!-- 2. МАГАЗИН МИШЕЙ -->
+  <!-- 2. МАГАЗИН МИШЕЙ (11 ВИДІВ) -->
   <div id="page-shop" class="page">
-    <h3 style="color: #ffcc00; margin: 5px 0;">🐭 Магазин Мишей</h3>
+    <h3 style="color: #ffcc00; margin: 5px 0;">🐭 Магазин Мишей (11 видів)</h3>
     <div class="grid-list">
-      
-      <!-- Новий рід: Ультра-Радікс -->
-      <div class="card" style="border: 1px solid #00ffcc;">
+      <div class="card"><div class="card-info"><div style="font-size: 30px;">⚙️🐭</div><div><b>Кібер-Миша</b><br><small class="badge-rare">Рідкісна | Тап x2</small></div></div><button class="btn-action" onclick="buyMouse('Кібер-Миша', 2, 2000, 'cheese')">2,000 🧀</button></div>
+      <div class="card"><div class="card-info"><div style="font-size: 30px;">⚔️🐭</div><div><b>Миша-Воїн</b><br><small class="badge-rare">Рідкісна | Тап x3</small></div></div><button class="btn-action" onclick="buyMouse('Миша-Воїн', 3, 5000, 'cheese')">5,000 🧀</button></div>
+      <div class="card"><div class="card-info"><div style="font-size: 30px;">🧙‍♂️🐭</div><div><b>Миша-Маг</b><br><small class="badge-rare">Рідкісна | Тап x4</small></div></div><button class="btn-action" onclick="buyMouse('Миша-Маг', 4, 12000, 'cheese')">12,000 🧀</button></div>
+      <div class="card"><div class="card-info"><div style="font-size: 30px;">🔥🐭</div><div><b>Вогняна Миша</b><br><small class="badge-epic">Епічна | Тап x6</small></div></div><button class="btn-action" onclick="buyMouse('Вогняна Миша', 6, 25000, 'cheese')">25,000 🧀</button></div>
+      <div class="card"><div class="card-info"><div style="font-size: 30px;">❄️🐭</div><div><b>Крижана Миша</b><br><small class="badge-epic">Епічна | Тап x8</small></div></div><button class="btn-action" onclick="buyMouse('Крижана Миша', 8, 50000, 'cheese')">50,000 🧀</button></div>
+      <div class="card" style="border: 1px solid #00ffcc;"><div class="card-info"><div style="font-size: 30px;">⚡🐭</div><div><b>Ультра-Радікс</b><br><small class="badge-ultra">Ультра | Тап x15</small></div></div><div style="display:flex; flex-direction:column; gap:4px;"><button class="btn-action" onclick="buyMouse('Ультра-Радікс', 15, 100000, 'cheese')">100k 🧀</button><button class="btn-action btn-stars" onclick="buyMouse('Ультра-Радікс', 15, 10, 'stars')">10 ⭐</button></div></div>
+      <div class="card" style="border: 1px solid #ffcc00;"><div class="card-info"><div style="font-size: 30px;">👑🐭</div><div><b>Золота Миша-Король</b><br><small class="badge-legend">Легендарна | Тап x25</small></div></div><button class="btn-action btn-stars" onclick="buyMouse('Золота Миша-Король', 25, 100, 'stars')">100 ⭐</button></div>
+      <div class="card" style="border: 1px solid #ffcc00;"><div class="card-info"><div style="font-size: 30px;">🐉🐭</div><div><b>Драконяча Миша</b><br><small class="badge-legend">Легендарна | Тап x40</small></div></div><button class="btn-action btn-stars" onclick="buyMouse('Драконяча Миша', 40, 250, 'stars')">250 ⭐</button></div>
+      <div class="card" style="border: 1px solid #ffcc00;"><div class="card-info"><div style="font-size: 30px;">🌌🐭</div><div><b>Космічна Миша</b><br><small class="badge-legend">Легендарна | Тап x60</small></div></div><button class="btn-action btn-stars" onclick="buyMouse('Космічна Миша', 60, 500, 'stars')">500 ⭐</button></div>
+      <div class="card" style="border: 1px solid #ff0055;"><div class="card-info"><div style="font-size: 30px;">💎🐭</div><div><b>Алмазна Миша</b><br><small class="badge-mythic">Міфічна | Тап x100</small></div></div><button class="btn-action btn-stars" onclick="buyMouse('Алмазна Миша', 100, 1000, 'stars')">1,000 ⭐</button></div>
+      <div class="card" style="border: 1px solid #ff0055;"><div class="card-info"><div style="font-size: 30px;">🔱🐭</div><div><b>Божественна Миша</b><br><small class="badge-mythic">Міфічна | Тап x200</small></div></div><button class="btn-action btn-stars" onclick="buyMouse('Божественна Миша', 200, 2500, 'stars')">2,500 ⭐</button></div>
+    </div>
+  </div>
+
+  <!-- 3. КЕЙСИ (11 КЕЙСІВ) -->
+  <div id="page-roulette" class="page">
+    <h3 style="color: #ffcc00; margin: 5px 0;">📦 Відкриття Кейсів (11 шт)</h3>
+    <div class="grid-list">
+
+      <!-- ПОДАРУНКОВИЙ КЕЙС (100 ЗІРОК) -->
+      <div class="card" style="border: 2px solid #ff0055; background: #261220;">
         <div class="card-info">
-          <div style="font-size: 30px;">⚡🐭</div>
-          <div><b>Ультра-Радікс</b><br><small class="badge-ultra">Ультра-Рідкісна | Тап x15</small></div>
+          <div style="font-size: 32px;">🎁</div>
+          <div><b>Преміум Подарунковий</b><br><small style="color:#ffcc00;">Випадає: 🧸 Ведмедик, 💍 Колечко або 10 ⭐</small></div>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-          <button class="btn-action" onclick="buyMouse('Ультра-Радікс', 15, 100000, 'cheese')">100k 🧀</button>
-          <button class="btn-action btn-stars" onclick="buyMouse('Ультра-Радікс', 15, 10, 'stars')">10 ⭐</button>
-        </div>
+        <button class="btn-action btn-stars" onclick="openGiftCase()">100 ⭐</button>
       </div>
 
+      <!-- 5 КЕЙСІВ ЗА СИР / ТАПИ -->
+      <div style="font-weight:bold; color:#00ffcc; margin-top:5px;">🧀 Кейси за Сир та Тапи:</div>
       <div class="card">
-        <div class="card-info">
-          <div style="font-size: 30px;">⚙️🐭</div>
-          <div><b>Кібер-Миша</b><br><small class="badge-rare">Рідкісна | Тап x2</small></div>
-        </div>
-        <button class="btn-action" onclick="buyMouse('Кібер-Миша', 2, 2000, 'cheese')">2,000 🧀</button>
+        <div class="card-info"><div style="font-size: 28px;">📦</div><div><b>Початковий Кейс</b><br><small style="color:#aaa;">Від 120 тапів або 100🧀</small></div></div>
+        <button class="btn-action" onclick="openCheeseCase(100, 120, 'Початковий')">100 🧀</button>
+      </div>
+      <div class="card">
+        <div class="card-info"><div style="font-size: 28px;">🥉</div><div><b>Мідний Кейс</b><br><small style="color:#aaa;">Нагорода: до 1,500🧀</small></div></div>
+        <button class="btn-action" onclick="openCheeseCase(500, 0, 'Мідний')">500 🧀</button>
+      </div>
+      <div class="card">
+        <div class="card-info"><div style="font-size: 28px;">🥈</div><div><b>Срібний Кейс</b><br><small style="color:#aaa;">Нагорода: до 8,000🧀</small></div></div>
+        <button class="btn-action" onclick="openCheeseCase(2500, 0, 'Срібний')">2,500 🧀</button>
+      </div>
+      <div class="card">
+        <div class="card-info"><div style="font-size: 28px;">🥇</div><div><b>Золотий Кейс</b><br><small style="color:#aaa;">Нагорода: до 35,000🧀</small></div></div>
+        <button class="btn-action" onclick="openCheeseCase(10000, 0, 'Золотий')">10,000 🧀</button>
+      </div>
+      <div class="card">
+        <div class="card-info"><div style="font-size: 28px;">💎</div><div><b>Платиновий Кейс</b><br><small style="color:#aaa;">Нагорода: до 200,000🧀</small></div></div>
+        <button class="btn-action" onclick="openCheeseCase(50000, 0, 'Платиновий')">50,000 🧀</button>
       </div>
 
+      <!-- 5 КЕЙСІВ ЗА ЗІРКИ -->
+      <div style="font-weight:bold; color:#ffcc00; margin-top:5px;">⭐ Кейси за Зірки:</div>
       <div class="card">
-        <div class="card-info">
-          <div style="font-size: 30px;">👑🐭</div>
-          <div><b>Міфічний Король</b><br><small class="badge-legend">Міфічна | Тап x25</small></div>
-        </div>
-        <button class="btn-action btn-stars" onclick="buyMouse('Міфічний Король', 25, 100, 'stars')">100 ⭐</button>
+        <div class="card-info"><div style="font-size: 28px;">🌟</div><div><b>Зірковий Новач</b><br><small style="color:#aaa;">Нагорода: до 15 ⭐</small></div></div>
+        <button class="btn-action btn-stars" onclick="openStarCase(5, 'Зірковий Новач')">5 ⭐</button>
+      </div>
+      <div class="card">
+        <div class="card-info"><div style="font-size: 28px;">💼</div><div><b>VIP Кейс</b><br><small style="color:#aaa;">Нагорода: до 50 ⭐</small></div></div>
+        <button class="btn-action btn-stars" onclick="openStarCase(20, 'VIP Кейс')">20 ⭐</button>
+      </div>
+      <div class="card">
+        <div class="card-info"><div style="font-size: 28px;">👑</div><div><b>Елітна Скриня</b><br><small style="color:#aaa;">Нагорода: до 120 ⭐</small></div></div>
+        <button class="btn-action btn-stars" onclick="openStarCase(50, 'Елітна Скриня')">50 ⭐</button>
+      </div>
+      <div class="card">
+        <div class="card-info"><div style="font-size: 28px;">🌌</div><div><b>Космічний Кейс</b><br><small style="color:#aaa;">Нагорода: до 400 ⭐</small></div></div>
+        <button class="btn-action btn-stars" onclick="openStarCase(150, 'Космічний Кейс')">150 ⭐</button>
+      </div>
+      <div class="card">
+        <div class="card-info"><div style="font-size: 28px;">🔱</div><div><b>Божественний Кейс</b><br><small style="color:#aaa;">Нагорода: до 1000 ⭐</small></div></div>
+        <button class="btn-action btn-stars" onclick="openStarCase(300, 'Божественний Кейс')">300 ⭐</button>
       </div>
 
     </div>
   </div>
 
-  <!-- 3. P2P АУКЦІОН -->
+  <!-- 4. АУКЦІОН -->
   <div id="page-auction" class="page">
     <h3 style="color: #ffcc00;">🏷 Аукціон Мишей (P2P)</h3>
-    
-    <!-- Виставити на аукціон -->
     <div class="card" style="flex-direction: column; align-items: flex-start; gap: 8px;">
       <b>➕ Виставити свою мишу:</b>
-      <div style="font-size: 11px; color: #aaa;">Ціна встановиться функцією автоматично: Звичайні/Рідкісні за 🧀, а Легендарні/Міфічні/Ультра за <b>11 ⭐</b>!</div>
+      <div style="font-size: 11px; color: #aaa;">Легендарні/Міфічні/Ультра виставляються за <b>11 ⭐</b>!</div>
       <button class="btn-action btn-green" style="width: 100%;" onclick="sellMyMouseOnAuction()">Виставити з Інвентарю</button>
     </div>
-
     <br>
-    <b>🛒 Доступні Лоти на Ринку:</b>
-    <div class="grid-list" id="auctionList" style="margin-top: 5px;">
-      <!-- Тут будуть з'являтися лоти -->
-    </div>
+    <b>🛒 Доступні Лоти:</b>
+    <div class="grid-list" id="auctionList" style="margin-top: 5px;"></div>
   </div>
 
-  <!-- 4. КЕЙСИ & РУЛЕТКА -->
-  <div id="page-roulette" class="page">
-    <h3 style="color: #ffcc00;">🎁 Щоденний Кейс</h3>
-    <div class="card" style="flex-direction: column; text-align: center; gap: 10px;">
-      <b>📦 Щоденний Кейс Подарунків</b>
-      <button id="btnDailyCase" class="btn-action btn-stars" style="width: 100%;" onclick="openDailyCase()">Відкрити Безкоштовно</button>
-      <div id="caseTimer" style="font-size: 12px; color: #ff9900;"></div>
-    </div>
-  </div>
-
-  <!-- 5. ПРОФІЛЬ & ВИВЕДЕННЯ -->
+  <!-- 5. ПРОФІЛЬ -->
   <div id="page-profile" class="page">
     <h3 style="color: #00ffcc;">👤 Профіль</h3>
     <div class="grid-list">
@@ -142,8 +172,8 @@
         <div id="myMiceList" style="color: #00ffcc; font-weight: bold;">Звичайна Миша</div>
       </div>
       <div class="card" style="flex-direction: column; align-items: flex-start; gap: 5px;">
-        <div><b>🧸 Інвентар:</b></div>
-        <div id="inventoryContainer" style="color: #ffcc00; font-weight: bold;">0 Ведмедиків</div>
+        <div><b>🧸 Інвентар Подарунків:</b></div>
+        <div id="inventoryContainer" style="color: #ffcc00; font-weight: bold;">0 Ведмедиків, 0 Колечок</div>
       </div>
       <div class="card" style="flex-direction: column; align-items: flex-start; gap: 10px; border: 1px solid #ffcc00;">
         <div style="color: #ffcc00; font-weight: bold;">💸 Виведення Нагороди (100⭐ + 1🧸)</div>
@@ -157,8 +187,8 @@
   <div class="nav-bar">
     <button class="nav-item active" onclick="switchPage('tap', this)">🎮 Гра</button>
     <button class="nav-item" onclick="switchPage('shop', this)">🐭 Миші</button>
+    <button class="nav-item" onclick="switchPage('roulette', this)">🎁 Кейси</button>
     <button class="nav-item" onclick="switchPage('auction', this)">🏷 Аукціон</button>
-    <button class="nav-item" onclick="switchPage('roulette', this)">🎁 Кейс</button>
     <button class="nav-item" onclick="switchPage('profile', this)">👤 Профіль</button>
   </div>
 
@@ -171,15 +201,13 @@
     let totalTaps = parseInt(localStorage.getItem('pt_taps')) || 0;
     let tapPower = parseInt(localStorage.getItem('pt_power')) || 1;
     let bearsCount = parseInt(localStorage.getItem('pt_bears')) || 0;
-    let myMice = JSON.parse(localStorage.getItem('pt_my_mice') || '["Кібер-Миша"]');
+    let ringsCount = parseInt(localStorage.getItem('pt_rings')) || 0;
+    let myMice = JSON.parse(localStorage.getItem('pt_my_mice') || '["Звичайна Миша"]');
 
-    // Лоти аукціону (початкові тестові гравці)
     let auctionLots = JSON.parse(localStorage.getItem('pt_auction_lots')) || [
-      { id: 1, name: "Ультра-Радікс", power: 15, price: 11, currency: "stars", seller: "@Sanya_Player" },
-      { id: 2, name: "Кібер-Миша", power: 2, price: 1500, currency: "cheese", seller: "@Pro_Gamer" }
+      { id: 1, name: "Золота Миша-Король", power: 25, price: 11, currency: "stars", seller: "@King_Player" }
     ];
 
-    // Тапалка
     document.getElementById('tapArea').addEventListener('click', () => {
       score += tapPower;
       totalTaps += 1;
@@ -187,7 +215,50 @@
       saveData(); updateUI();
     });
 
-    // Купівля в магазині
+    // ВІДКРИТТЯ ПОДАРУНКОВОГО КЕЙСУ (100 ЗІРОК)
+    function openGiftCase() {
+      if (stars < 100) return alert("❌ Потрібно 100 ⭐ Зірок для відкриття!");
+      stars -= 100;
+
+      const rand = Math.random() * 100;
+      if (rand < 80) {
+        bearsCount += 1;
+        alert("🎉 Вам випав: 🧸 Ведмедик!");
+      } else if (rand < 95) {
+        ringsCount += 1;
+        alert("✨ Ого! Вам випало рідкісне: 💍 Смарагдове Колечко!");
+      } else {
+        stars += 10;
+        alert("💎 ДУЖЕ РІДКО! Вам випала компенсація: 10 ⭐ Зірок!");
+      }
+      saveData(); updateUI();
+    }
+
+    // ВІДКРИТТЯ КЕЙСІВ ЗА СИР
+    function openCheeseCase(cost, reqTaps, name) {
+      if (reqTaps > 0 && totalTaps < reqTaps) return alert(`❌ Потрібно зробити щонайменше ${reqTaps} тапів!`);
+      if (score < cost) return alert("❌ Недостатньо Сиру!");
+
+      score -= cost;
+      const reward = Math.floor(cost * (0.5 + Math.random() * 2));
+      score += reward;
+
+      alert(`📦 З кейсу "${name}" ви виграли: ${reward} 🧀 Сиру!`);
+      saveData(); updateUI();
+    }
+
+    // ВІДКРИТТЯ КЕЙСІВ ЗА ЗІРКИ
+    function openStarCase(cost, name) {
+      if (stars < cost) return alert("❌ Недостатньо Зірок!");
+
+      stars -= cost;
+      const reward = Math.floor(cost * (0.4 + Math.random() * 2.2));
+      stars += reward;
+
+      alert(`🌟 З кейсу "${name}" ви виграли: ${reward} ⭐ Зірок!`);
+      saveData(); updateUI();
+    }
+
     function buyMouse(name, power, price, currency) {
       if (currency === 'cheese' && score >= price) { score -= price; }
       else if (currency === 'stars' && stars >= price) { stars -= price; }
@@ -199,50 +270,35 @@
       saveData(); updateUI();
     }
 
-    // Автоматичне виставлення на аукціон
     function sellMyMouseOnAuction() {
-      if (myMice.length === 0) return alert("❌ У вас немає мишей для продажу!");
-
-      const mouseToSell = myMice.pop(); // Беремо останню мишу
+      if (myMice.length <= 1) return alert("❌ Залиште хоча б одну мишу!");
+      const mouseToSell = myMice.pop();
       let price = 5000;
       let currency = "cheese";
 
-      // Автопідбір ціни: Легендарні/Міфічні/Ультра виставляються чітко за 11 зірок
-      if (mouseToSell.includes("Ультра") || mouseToSell.includes("Король") || mouseToSell.includes("Міфічний")) {
+      if (mouseToSell.includes("Ультра") || mouseToSell.includes("Король") || mouseToSell.includes("Драконяча") || mouseToSell.includes("Космічна") || mouseToSell.includes("Алмазна") || mouseToSell.includes("Божественна")) {
         price = 11;
         currency = "stars";
       }
 
-      const newLot = {
-        id: Date.now(),
-        name: mouseToSell,
-        power: 10,
-        price: price,
-        currency: currency,
-        seller: "@Ви"
-      };
-
-      auctionLots.push(newLot);
-      alert(`🎉 Мишу "${mouseToSell}" виставлено на Аукціон за ${price} ${currency === 'stars' ? '⭐' : '🧀'}!`);
+      auctionLots.push({ id: Date.now(), name: mouseToSell, power: 10, price: price, currency: currency, seller: "@Ви" });
+      alert(`🎉 Виставили "${mouseToSell}" на Аукціон!`);
       saveData(); updateUI();
     }
 
-    // Купівля на аукціоні
     function buyAuctionLot(lotId) {
       const index = auctionLots.findIndex(l => l.id === lotId);
       if (index === -1) return;
-
       const lot = auctionLots[index];
 
       if (lot.currency === 'cheese' && score >= lot.price) { score -= lot.price; }
       else if (lot.currency === 'stars' && stars >= lot.price) { stars -= lot.price; }
-      else { return alert("❌ Недостатньо коштів для покупки цього лота!"); }
+      else { return alert("❌ Недостатньо коштів!"); }
 
       tapPower = lot.power;
       myMice.push(lot.name);
       auctionLots.splice(index, 1);
-
-      alert(`🎉 Ви успішно придбали ${lot.name} на аукціоні!`);
+      alert(`🎉 Купили ${lot.name}!`);
       saveData(); updateUI();
     }
 
@@ -251,6 +307,7 @@
       localStorage.setItem('pt_stars', stars);
       localStorage.setItem('pt_taps', totalTaps);
       localStorage.setItem('pt_bears', bearsCount);
+      localStorage.setItem('pt_rings', ringsCount);
       localStorage.setItem('pt_my_mice', JSON.stringify(myMice));
       localStorage.setItem('pt_auction_lots', JSON.stringify(auctionLots));
     }
@@ -260,23 +317,16 @@
       document.getElementById('starsScore').innerText = stars;
       document.getElementById('totalTapsCnt').innerText = totalTaps;
       document.getElementById('myMiceList').innerText = myMice.join(', ') || "Немає";
-      document.getElementById('inventoryContainer').innerText = `${bearsCount} 🧸 Ведмедиків`;
+      document.getElementById('inventoryContainer').innerText = `${bearsCount} 🧸 Ведмедиків, ${ringsCount} 💍 Колечок`;
 
-      // Оновлення списку аукціону
       const auctionList = document.getElementById('auctionList');
       auctionList.innerHTML = "";
-
       auctionLots.forEach(lot => {
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-          <div class="card-info">
-            <div style="font-size: 28px;">🏷🐭</div>
-            <div><b>${lot.name}</b><br><small style="color:#aaa;">Продавець: ${lot.seller}</small></div>
-          </div>
-          <button class="btn-action ${lot.currency === 'stars' ? 'btn-stars' : ''}" onclick="buyAuctionLot(${lot.id})">
-            ${lot.price} ${lot.currency === 'stars' ? '⭐' : '🧀'}
-          </button>
+          <div class="card-info"><div style="font-size: 28px;">🏷🐭</div><div><b>${lot.name}</b><br><small style="color:#aaa;">Продавець: ${lot.seller}</small></div></div>
+          <button class="btn-action ${lot.currency === 'stars' ? 'btn-stars' : ''}" onclick="buyAuctionLot(${lot.id})">${lot.price} ${lot.currency === 'stars' ? '⭐' : '🧀'}</button>
         `;
         auctionList.appendChild(card);
       });
